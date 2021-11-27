@@ -2647,9 +2647,10 @@ Float_t HZZ4lNtupleMaker::getAllWeight(const vector<const reco::Candidate*>& lep
     if (myLepID == 11) isCrack = userdatahelpers::getUserFloat(leptons[i],"isCrack");
     else isCrack = false;
 
-
-    SF = lepSFHelper->getSF(year,myLepID,myLepPt,myLepEta, mySCeta, isCrack);
-    SF_Unc = lepSFHelper->getSFError(year,myLepID,myLepPt,myLepEta, mySCeta, isCrack);
+    bool preVFP = false;  //need to figure out the condition on which preVFP=true
+	  
+    SF = lepSFHelper->getSF(year,myLepID,myLepPt,myLepEta, mySCeta, isCrack, preVFP);
+    SF_Unc = lepSFHelper->getSFError(year,myLepID,myLepPt,myLepEta, mySCeta, isCrack, preVFP);
 
     LepSF.push_back(SF);
     LepSF_Unc.push_back(SF_Unc);
