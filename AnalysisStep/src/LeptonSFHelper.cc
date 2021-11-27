@@ -95,7 +95,7 @@ LeptonSFHelper::~LeptonSFHelper()
 {
 }
 
-float LeptonSFHelper::getSF(int year, int flav, float pt, float eta, float SCeta, bool isCrack)
+float LeptonSFHelper::getSF(int year, int flav, float pt, float eta, float SCeta, bool isCrack, bool preVFP)
 {
    float RecoSF = 1.0;
    float SelSF = 1.0;
