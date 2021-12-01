@@ -8,7 +8,7 @@ LeptonSFHelper::LeptonSFHelper(bool preVFP)
    // 2016 preVFP Electrons 
    if(preVFP)
    {
-      TString fipEleNotCracks_2016 = Form("$CMSSW_BASE/src/ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ElectronSF_UL2016preVFP_nogap.root);
+      TString fipEleNotCracks_2016 = Form("$CMSSW_BASE/src/ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ElectronSF_UL2016preVFP_nogap.root");
       root_file = TFile::Open(fipEleNotCracks_2016.Data(),"READ");
       h_Ele_notCracks_2016 = (TH2F*) root_file->Get("EGamma_SF2D")->Clone();
       
@@ -20,7 +20,7 @@ LeptonSFHelper::LeptonSFHelper(bool preVFP)
    // 2016 postVFP Electrons                                           
    else
    {
-      TString fipEleNotCracks_2016 = Form("$CMSSW_BASE/src/ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ElectronSF_UL2016postVFP_nogap.root);
+      TString fipEleNotCracks_2016 = Form("$CMSSW_BASE/src/ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ElectronSF_UL2016postVFP_nogap.root");
       root_file = TFile::Open(fipEleNotCracks_2016.Data(),"READ");
       h_Ele_notCracks_2016 = (TH2F*) root_file->Get("EGamma_SF2D")->Clone();
       
