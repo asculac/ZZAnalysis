@@ -3,25 +3,34 @@
 using namespace std;
 //using namespace edm;
 
-LeptonSFHelper::LeptonSFHelper()
+LeptonSFHelper::LeptonSFHelper(bool preVFP)
 {
    // 2016 preVFP Electrons 
-   TString fipEleNotCracks_2016preVFP = Form("$CMSSW_BASE/src/ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ElectronSF_UL2016preVFP_nogap.root);
-   root_file = TFile::Open(fipEleNotCracks_2016preVFP.Data(),"READ");
-   h_Ele_notCracks_2016preVFP = (TH2F*) root_file->Get("EGamma_SF2D")->Clone();
+   if(preVFP)
+   {
+      TString fipEleNotCracks_2016 = Form("$CMSSW_BASE/src/ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ElectronSF_UL2016preVFP_nogap.root);
+      root_file = TFile::Open(fipEleNotCracks_2016.Data(),"READ");
+      h_Ele_notCracks_2016 = (TH2F*) root_file->Get("EGamma_SF2D")->Clone();
       
-   TString fipEleCracks_2016preVFP = Form("$CMSSW_BASE/src/ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ElectronSF_UL2016preVFP_gap.root");
-   root_file = TFile::Open(fipEleCracks_2016preVFP.Data(),"READ");
-   h_Ele_Cracks_2016preVFP = (TH2F*) root_file->Get("EGamma_SF2D")->Clone();
-   
-   // 2016 postVFP Electrons 
-   TString fipEleNotCracks_2016postVFP = Form("$CMSSW_BASE/src/ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ElectronSF_UL2016postVFP_nogap.root);
-   root_file = TFile::Open(fipEleNotCracks_2016postVFP.Data(),"READ");
-   h_Ele_notCracks_2016postVFP = (TH2F*) root_file->Get("EGamma_SF2D")->Clone();
+      TString fipEleCracks_2016 = Form("$CMSSW_BASE/src/ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ElectronSF_UL2016preVFP_gap.root");
+      root_file = TFile::Open(fipEleCracks_2016.Data(),"READ");
+      h_Ele_Cracks_2016 = (TH2F*) root_file->Get("EGamma_SF2D")->Clone();
       
-   TString fipEleCracks_2016postVFP = Form("$CMSSW_BASE/src/ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ElectronSF_UL2016postVFP_gap.root");
-   root_file = TFile::Open(fipEleCracks_2016postVFP.Data(),"READ");
-   h_Ele_Cracks_2016postVFP = (TH2F*) root_file->Get("EGamma_SF2D")->Clone();
+   }
+   // 2016 postVFP Electrons                                           
+   else
+   {
+      TString fipEleNotCracks_2016 = Form("$CMSSW_BASE/src/ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ElectronSF_UL2016postVFP_nogap.root);
+      root_file = TFile::Open(fipEleNotCracks_2016.Data(),"READ");
+      h_Ele_notCracks_2016 = (TH2F*) root_file->Get("EGamma_SF2D")->Clone();
+      
+      TString fipEleCracks_2016 = Form("$CMSSW_BASE/src/ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ElectronSF_UL2016postVFP_gap.root");
+      root_file = TFile::Open(fipEleCracks_2016.Data(),"READ");
+      h_Ele_Cracks_2016 = (TH2F*) root_file->Get("EGamma_SF2D")->Clone();
+      
+   }
+                                       
+
                                               
    //2016 Electrons RECO
    TString fipEleReco_highPt_2016 = Form("$CMSSW_BASE/src/ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/Ele_Reco_2016.root");
@@ -95,7 +104,7 @@ LeptonSFHelper::~LeptonSFHelper()
 {
 }
 
-float LeptonSFHelper::getSF(int year, int flav, float pt, float eta, float SCeta, bool isCrack, bool preVFP)
+float LeptonSFHelper::getSF(int year, int flav, float pt, float eta, float SCeta, bool isCrack)
 {
    float RecoSF = 1.0;
    float SelSF = 1.0;
@@ -148,27 +157,13 @@ float LeptonSFHelper::getSF(int year, int flav, float pt, float eta, float SCeta
       {
          if(isCrack)
             {
-               if(preVFP)
-               {
-                  SelSF = h_Ele_Cracks_2016preVFP->GetBinContent(h_Ele_Cracks_2016preVFP->FindFixBin(SCeta, std::min(pt,499.f)));
-               }
-               else
-               {
-                  SelSF = h_Ele_Cracks_2016postVFP->GetBinContent(h_Ele_Cracks_2016postVFP->FindFixBin(SCeta, std::min(pt,499.f)));
-               }
+               SelSF = h_Ele_Cracks_2016->GetBinContent(h_Ele_Cracks_2016postVFP->FindFixBin(SCeta, std::min(pt,499.f)));
                
             }
             else
             {
-               if(preVFP)
-               {
-                  SelSF = h_Ele_notCracks_2016preVFP->GetBinContent(h_Ele_notCracks_2016preVFP->FindFixBin(SCeta, std::min(pt,499.f)));
-               }
-               else
-               {
-                  SelSF = h_Ele_notCracks_2016postVFP->GetBinContent(h_Ele_notCracks_2016postVFP->FindFixBin(SCeta, std::min(pt,499.f)));
-               }
-               
+               SelSF = h_Ele_notCracks_2016->GetBinContent(h_Ele_notCracks_2016preVFP->FindFixBin(SCeta, std::min(pt,499.f)));
+   
             }
          
       }
