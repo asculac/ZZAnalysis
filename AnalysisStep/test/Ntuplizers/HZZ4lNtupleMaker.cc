@@ -643,6 +643,7 @@ private:
   TH1F *hCounter;
 
   bool isMC;
+  bool preVFP=false; //for UL2016 distinguishing between preVFP/postVFP
   bool is_loose_ele_selection; // Collection includes candidates with loose electrons/TLEs
   bool applySkim;       //   "     "      "         skim (if skipEmptyEvents=true)
   bool skipEmptyEvents; // Skip events whith no selected candidate (otherwise, gen info is preserved for all events; candidates not passing trigger&&skim are flagged with negative ZZsel)
@@ -735,6 +736,7 @@ private:
   Float_t gen_sumWeights;
 
   string sampleName;
+  string dataTag;
 
   std::vector<const reco::Candidate *> genFSR;
 
@@ -791,6 +793,7 @@ HZZ4lNtupleMaker::HZZ4lNtupleMaker(const edm::ParameterSet& pset) :
 
   pileUpReweight(nullptr),
   sampleName(pset.getParameter<string>("sampleName")),
+  dataTag(pset.getPatameter<string>("dataTag")),
   h_weight(0),
 
   printedLHEweightwarning(false)
@@ -909,8 +912,13 @@ HZZ4lNtupleMaker::HZZ4lNtupleMaker(const edm::ParameterSet& pset) :
   gr_NNLOPSratio_pt_powheg_2jet = (TGraphErrors*)NNLOPS_weight_file->Get("gr_NNLOPSratio_pt_powheg_2jet");
   gr_NNLOPSratio_pt_powheg_3jet = (TGraphErrors*)NNLOPS_weight_file->Get("gr_NNLOPSratio_pt_powheg_3jet");
 
+  
+  if(dataTag="ULAPV"){
+    preVFP=true;
+  }
+
   //Scale factors for data/MC efficiency
-  if (!skipEleDataMCWeight && isMC) { lepSFHelper = new LeptonSFHelper(); }
+  if (!skipEleDataMCWeight && isMC) { lepSFHelper = new LeptonSFHelper(preVFP); }
 
   if (!skipHqTWeight) {
     //HqT weights
@@ -2647,10 +2655,9 @@ Float_t HZZ4lNtupleMaker::getAllWeight(const vector<const reco::Candidate*>& lep
     if (myLepID == 11) isCrack = userdatahelpers::getUserFloat(leptons[i],"isCrack");
     else isCrack = false;
 
-    bool preVFP = false;  //need to figure out the condition on which preVFP=true
 	  
-    SF = lepSFHelper->getSF(year,myLepID,myLepPt,myLepEta, mySCeta, isCrack, preVFP);
-    SF_Unc = lepSFHelper->getSFError(year,myLepID,myLepPt,myLepEta, mySCeta, isCrack, preVFP);
+    SF = lepSFHelper->getSF(year,myLepID,myLepPt,myLepEta, mySCeta, isCrack);
+    SF_Unc = lepSFHelper->getSFError(year,myLepID,myLepPt,myLepEta, mySCeta, isCrack);
 
     LepSF.push_back(SF);
     LepSF_Unc.push_back(SF_Unc);

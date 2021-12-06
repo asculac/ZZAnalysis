@@ -86,6 +86,12 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 if (SAMPLE_TYPE == 2016):
     if IsMC:
         process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mcRun2_asymptotic_v3', '')
+        if (DATA_TAG == "ULAPV"):
+            # preVFP samples have different GT
+            # Use DATA_TAG (include in MC csv files) to distinguish between pre/post VFP
+            process.GlobalTag = GlobalTag(process.GlobalTag, '106X_mcRun2_asymptotic_preVFP_v11', '')
+        else:
+            process.GlobalTag = GlobalTag(process.GlobalTag, '106X_mcRun2_asymptotic_v17', '')
     else:
         process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v10', '')
 
