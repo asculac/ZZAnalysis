@@ -1075,21 +1075,27 @@ theBTagger=""
 theBTaggerThr=0
 theBTagSFFile=""
 theBTagMCEffFile=""
-if (LEPTON_SETUP == 2016): #DeepCSV, from https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation2016Legacy
+if (LEPTON_SETUP == 2016):
+   if( DATA_TAG == 'ULAPV'):
+       theBTagger="pfDeepCSVJetTags:probb"
+       theBTaggerThr=0.6001
+       theBTagSFFile="ZZAnalysis/AnalysisStep/data/BTagging/DeepCSV_106XUL16preVFPSF_v1_hzz.csv"
+       theBTagMCEffFile="ZZAnalysis/AnalysisStep/data/BTagging/bTagEfficiencies_2016_LegacyPaper.root"
+   else:
+       theBTagger="pfDeepCSVJetTags:probb"
+       theBTaggerThr=0.5847
+       theBTagSFFile="ZZAnalysis/AnalysisStep/data/BTagging/DeepCSV_106XUL16postVFPSF_v2_hzz.csv"
+       theBTagMCEffFile="ZZAnalysis/AnalysisStep/data/BTagging/bTagEfficiencies_2016_LegacyPaper.root"
+elif (LEPTON_SETUP == 2017):
    theBTagger="pfDeepCSVJetTags:probb"
-   theBTaggerThr=0.6321
-   theBTagSFFile="ZZAnalysis/AnalysisStep/data/BTagging/DeepCSV_2016LegacySF_V1.csv"
-   theBTagMCEffFile="ZZAnalysis/AnalysisStep/data/BTagging/bTagEfficiencies_2016_LegacyPaper.root"
-elif (LEPTON_SETUP == 2017): #DeepCSV, from https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation94X
-   theBTagger="pfDeepCSVJetTags:probb"
-   theBTaggerThr=0.4941
-   theBTagSFFile="ZZAnalysis/AnalysisStep/data/BTagging/DeepCSV_94XSF_V4_B_F.csv"
+   theBTaggerThr=0.4506
+   theBTagSFFile="ZZAnalysis/AnalysisStep/data/BTagging/wp_deepCSV_106XUL17_v3_hzz.csv"
    theBTagMCEffFile="ZZAnalysis/AnalysisStep/data/BTagging/bTagEfficiencies_2017_LegacyPaper.root"
-elif (LEPTON_SETUP == 2018): #DeepCSV, from https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation102X
+elif (LEPTON_SETUP == 2018):
    theBTagger="pfDeepCSVJetTags:probb"
-   theBTaggerThr=0.4184
-   theBTagSFFile="ZZAnalysis/AnalysisStep/data/BTagging/DeepCSV_102XSF_V1.csv"
-   theBTagMCEffFile="ZZAnalysis/AnalysisStep/data/BTagging/bTagEfficiencies_2018_LegacyPaper.root" 
+   theBTaggerThr=0.4168
+   theBTagSFFile="ZZAnalysis/AnalysisStep/data/BTagging/wp_deepCSV_106XUL18_v2_hzz.csv"
+   theBTagMCEffFile="ZZAnalysis/AnalysisStep/data/BTagging/bTagEfficiencies_2018_LegacyPaper.root"
 else:
    sys.exit("ZZ4lAnalysis.py: Need to define the btagging for the new setup!")
 
