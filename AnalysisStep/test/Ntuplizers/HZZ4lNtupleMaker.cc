@@ -643,6 +643,7 @@ private:
   ZZ4lConfigHelper myHelper;
   int theChannel;
   std::string theCandLabel;
+  //std::string theLowptLabel;
   TString theFileName;
 
   HZZ4lNtupleFactory *myTree;
@@ -696,6 +697,7 @@ private:
   edm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedgenParticlesToken; //ATbbf
   edm::EDGetTokenT<GenEventInfoProduct> genInfoToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > candToken;
+  //edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > lowptToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > lhecandToken;
   edm::EDGetTokenT<edm::TriggerResults> triggerResultToken;
   edm::EDGetTokenT<vector<reco::Vertex> > vtxToken;
@@ -780,6 +782,7 @@ HZZ4lNtupleMaker::HZZ4lNtupleMaker(const edm::ParameterSet& pset) :
   myHelper(pset),
   theChannel(myHelper.channel()), // Valid options: ZZ, ZLL, ZL
   theCandLabel(pset.getUntrackedParameter<string>("CandCollection")), // Name of input ZZ collection
+  //theLowptLabel(pset.getUntrackedParameter<string>("LowptCollection")),
   theFileName(pset.getUntrackedParameter<string>("fileName")),
   myTree(nullptr),
   skipEmptyEvents(pset.getParameter<bool>("skipEmptyEvents")), // Do not store events with no selected candidate (normally: true)
@@ -823,6 +826,7 @@ HZZ4lNtupleMaker::HZZ4lNtupleMaker(const edm::ParameterSet& pset) :
   GENCandidatesToken = consumes<edm::View<pat::CompositeCandidate> >(edm::InputTag("GENLevel"));
   consumesMany<LHEEventProduct>();
   candToken = consumes<edm::View<pat::CompositeCandidate> >(edm::InputTag(theCandLabel));
+  //lowptToken = consumes<edm::View<pat::CompositeCandidate> >(edm::InputTag(theLowptLabel));
 
   is_loose_ele_selection = false;
   if(pset.exists("is_loose_ele_selection")) {
@@ -1376,6 +1380,8 @@ void HZZ4lNtupleMaker::analyze(const edm::Event& event, const edm::EventSetup& e
   // Get candidate collection
   edm::Handle<edm::View<pat::CompositeCandidate> > candHandle;
   event.getByToken(candToken, candHandle);
+  //edm::Handle<edm::View<pat::CompositeCandidate> > lowptHandle;
+  //event.getByToken(lowptToken, lowptHandle);
   if(candHandle.failedToGet()) {
     if(is_loose_ele_selection) return; // The collection can be missing in this case since we have a filter to skip the module when a regular candidate is present.
     else edm::LogError("") << "ZZ collection not found in non-loose electron flow. This should never happen";

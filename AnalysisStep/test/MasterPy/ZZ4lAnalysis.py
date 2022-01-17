@@ -419,10 +419,19 @@ else:
 
 #--- Run2 electron momentum scale and resolution corrections
 
+#process.selectedSlimmedElectrons = cms.EDFilter("PATElectronSelector",
+#    src = cms.InputTag("slimmedElectrons"),
+#    cut = cms.string("pt>5 && abs(eta)<2.5")
+#)
 process.selectedSlimmedElectrons = cms.EDFilter("PATElectronSelector",
-    src = cms.InputTag("slimmedElectrons"),
-    cut = cms.string("pt>5 && abs(eta)<2.5")
+    src = cms.InputTag("patLowPtElectrons"),
+    cut = cms.string("pt>1. && electronID('ID')>1.5")
 )
+
+#process.selectedPatLowPtElectrons = cms.EDFilter("PATElectronSelector",
+#    src = cms.InputTag("patLowPtElectrons"),
+#    cut = cms.string("pt>1. && electronID('ID')>1.5"),
+#)
 
 #--- Photon ID modules seem to be OK also for UL cf: 
 #--- https://github.com/cms-egamma/EgammaPostRecoTools/blob/master/python/EgammaPostRecoTools.py#L63
