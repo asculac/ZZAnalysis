@@ -123,8 +123,8 @@ EleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     // Load correct RunII BDT ID+iso
     float BDT = -99;
     if      ( setup == 2016 ) BDT = l.userFloat("ElectronMVAEstimatorRun2Summer16ULIdIsoValues");
-    else if ( setup == 2017 ) BDT = l.userFloat("ElectronMVAEstimatorRun2Summer17ULIdIsoValues");
-    else if ( setup == 2018 ) BDT = l.userFloat("ElectronMVAEstimatorRun2Summer18ULIdIsoValues");
+    else if ( setup == 2017 ) BDT = l.userFloat("ElectronMVAEstimatorRun2Fall17IdNoIsoValues");
+    else if ( setup == 2018 ) BDT = l.userFloat("ElectronMVAEstimatorRun2Autumn18IdNoIsoValues");
     // cout << "BDT = " << BDT << endl;
 
     float pt = l.pt();
@@ -144,23 +144,23 @@ EleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
 	 else if (setup==2017)
 	 {
-	   //WP taken from https://github.com/asculac/cmssw/blob/Electron_XGBoost_MVA_16UL_17UL/RecoEgamma/ElectronIdentification/python/Identification/mvaElectronID_Summer17UL_ID_ISO_cff.py#L27-L34 and transfered with https://github.com/cms-sw/cmssw/blob/CMSSW_9_4_X/RecoEgamma/EgammaTools/interface/MVAValueMapProducer.h#L145 so that they are between -1 and 1
-       isBDT         = (pt<=10 && ((fSCeta<0.8                  && BDT >  0.9128577458) ||
-                                   (fSCeta>=0.8 && fSCeta<1.479 && BDT >  0.9056792368) ||
-                                   (fSCeta>=1.479               && BDT >  0.9439440575)))
-                    || (pt>10  && ((fSCeta<0.8                  && BDT >  0.1559788054) ||
-                                   (fSCeta>=0.8 && fSCeta<1.479 && BDT >  0.0273863727) ||
-                                   (fSCeta>=1.479               && BDT >  -0.5532483665)));
+	   //WP taken from https://github.com/asculac/cmssw/blob/Electron_XGBoost_MVA_17_noIso/RecoEgamma/ElectronIdentification/python/Identification/mvaElectronID_Fall17_ID_NOISO_cff.py#L29-L34 and transfered with https://github.com/cms-sw/cmssw/blob/CMSSW_9_4_X/RecoEgamma/EgammaTools/interface/MVAValueMapProducer.h#L145 so that they are between -1 and 1
+       isBDT         = (pt<=10 && ((fSCeta<0.8                  && BDT >  0.8469978775) ||
+                                   (fSCeta>=0.8 && fSCeta<1.479 && BDT >  0.8500428145) ||
+                                   (fSCeta>=1.479               && BDT >  0,9136104233)))
+                    || (pt>10  && ((fSCeta<0.8                  && BDT >  -0.2964798316) ||
+                                   (fSCeta>=0.8 && fSCeta<1.479 && BDT >  -0.343129096) ||
+                                   (fSCeta>=1.479               && BDT >  -0.7000795901)));
 	 }
     else if ( setup==2018 )
     {
-       //WP taken from https://github.com/asculac/cmssw/blob/e379e4dd45bb70374cae460a44caff784da92e94/RecoEgamma/ElectronIdentification/python/Identification/mvaElectronID_Summer18UL_ID_ISO_cff.py#L27-L34 and transfered with https://github.com/cms-sw/cmssw/blob/CMSSW_9_4_X/RecoEgamma/EgammaTools/interface/MVAValueMapProducer.h#L145 so that they are between -1 and 1
-       isBDT         = (pt<=10 && ((fSCeta<0.8                  && BDT >  0.9044286167) ||
-                                   (fSCeta>=0.8 && fSCeta<1.479 && BDT >  0.9094166886) ||
-                                   (fSCeta>=1.479               && BDT >  0.9443653660)))
-                    || (pt>10  && ((fSCeta<0.8                  && BDT >  0.1968600840) ||
-                                   (fSCeta>=0.8 && fSCeta<1.479 && BDT >  0.0759172100) ||
-                                   (fSCeta>=1.479               && BDT >  -0.5169136775)));
+       //WP taken from https://github.com/asculac/cmssw/blob/Electron_XGBoost_MVA_17_noIso/RecoEgamma/ElectronIdentification/python/Identification/mvaElectronID_Autumn18_ID_NOISO_cff.py#L27-L34 and transfered with https://github.com/cms-sw/cmssw/blob/CMSSW_9_4_X/RecoEgamma/EgammaTools/interface/MVAValueMapProducer.h#L145 so that they are between -1 and 1
+       isBDT         = (pt<=10 && ((fSCeta<0.8                  && BDT >  0.8432289779) ||
+                                   (fSCeta>=0.8 && fSCeta<1.479 && BDT >  0.8564346204) ||
+                                   (fSCeta>=1.479               && BDT >  0.9199849374)))
+                    || (pt>10  && ((fSCeta<0.8                  && BDT >  -0.2749216641) ||
+                                   (fSCeta>=0.8 && fSCeta<1.479 && BDT >  -0.3184240215) ||
+                                   (fSCeta>=1.479               && BDT >  -0.6769411185)));
      }
 	 else
 	 {
