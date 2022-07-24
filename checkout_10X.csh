@@ -25,8 +25,8 @@ git cms-addpkg  RecoJets/JetProducers
 git cms-addpkg GeneratorInterface/RivetInterface
 git cms-addpkg SimDataFormats/HTXS
 
-# 2016 and 2018 retraining for electron BDT
-git cms-merge-topic mkovac:Electron_XGBoost_MVA_2016_and_2018_CMSSW_10_2_15
+# 2017 and 2018 retraining for noiso electron BDT
+git cms-merge-topic asculac:Electron_XGBoost_MVA_17_noIso
 
 #MET corrections according to https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription#Instructions_for_9_4_X_X_0_for_M
 git cms-merge-topic cms-met:METFixEE2017_949_v2_backport_to_102X
