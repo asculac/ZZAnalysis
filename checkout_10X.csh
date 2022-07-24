@@ -27,6 +27,7 @@ git cms-addpkg EgammaAnalysis/ElectronTools
 #UL 2016, 2017 and 2018 retraining for electron BDT
 #Not needed anymore, now MVA weights and cfg files are stored in CMSSW dataset and accessed directly via VID
 #git cms-merge-topic bonanomi:ElectronsMVA_UL
+git cms-merge-topic asculac:Electron_XGBoost_MVA_17_noIso
 
 #### Please do not add any custom (non-CMSSW) package before this line ####
 #ZZAnalysis
