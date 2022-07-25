@@ -26,7 +26,7 @@ git cms-addpkg GeneratorInterface/RivetInterface
 git cms-addpkg SimDataFormats/HTXS
 
 # 2017 and 2018 retraining for noiso electron BDT
-git cms-merge-topic asculac:Electron_XGBoost_MVA_17_noIso
+git cms-merge-topic asculac:noISO_CMSSW_10_2_X
 
 #MET corrections according to https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription#Instructions_for_9_4_X_X_0_for_M
 git cms-merge-topic cms-met:METFixEE2017_949_v2_backport_to_102X
