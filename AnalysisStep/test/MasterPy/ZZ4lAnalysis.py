@@ -419,7 +419,7 @@ if (LEPTON_SETUP == 2017):
    setupEgammaPostRecoSeq(process,
                           runEnergyCorrections=True,
                           runVID=True,
-			  eleIDModules=['RecoEgamma.PhotonIdentification.Identification.mvaElectronID_Fall17_ID_NOISO_cff.py'],
+			  eleIDModules=['RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Fall17_ID_NOISO_cff.py'],
                           phoIDModules=['RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Fall17_94X_V2_cff'],
                           era='2017-Nov17ReReco')
 
