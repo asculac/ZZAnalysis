@@ -1,5 +1,5 @@
 #DATA_TAG = "ReReco" # Change to PromptReco for Run2016 period H
-LEPTON_SETUP = 2017  # current default = 2017 = Moriond2017
+LEPTON_SETUP = 2018  # current default = 2017 = Moriond2017
 #ELECORRTYPE = "None" # "None" to switch off
 #ELEREGRESSION = "None" # "None" to switch off
 APPLYMUCORR = True  # Switch off muon scale corrections
@@ -8,9 +8,9 @@ APPLYJER = True     #
 RECORRECTMET = True #
 #KINREFIT = True    # control KinZFitter (very slow)
 PROCESS_CR = True   # Uncomment to run CR paths and trees
-#ADDLOOSEELE = True  # Run paths for loose electrons
+ADDLOOSEELE = True  # Run paths for loose electrons
 #APPLYTRIG = False    # hack for samples missing correct triggers - use with caution
-#KEEPLOOSECOMB = True # Do not skip loose lepton ZZ combinations (for debugging)
+KEEPLOOSECOMB = True # Do not skip loose lepton ZZ combinations (for debugging)
 ADDZTREE = True      # Add tree for Z analysis
 #SAMPLENAME = "THW" # For running locally, some samples needs this to be specified (TTZ, THW, WWZ,...) See MCHistoryTools for all samples
 FAILED_TREE_LEVEL = True # To print candTree_failed, if you don't want to save it comment this line
@@ -42,13 +42,15 @@ if not IsMC:
 
 process.source.fileNames = cms.untracked.vstring(
 ### ULTRA-LEGACY PAPER - 2017 sync files
-'/store/mc/RunIISummer20UL17MiniAOD/GluGluHToZZTo4L_M125_TuneCP5_13TeV_powheg2_JHUGenV7011_pythia8/MINIAODSIM/106X_mc2017_realistic_v6-v2/270000/794448BF-6D5B-7149-90C7-2F7D0F3E1DA6.root'
+#'/store/mc/RunIISummer20UL17MiniAOD/GluGluHToZZTo4L_M125_TuneCP5_13TeV_powheg2_JHUGenV7011_pythia8/MINIAODSIM/106X_mc2017_realistic_v6-v2/270000/794448BF-6D5B-7149-90C7-2F7D0F3E1DA6.root'
+"/store/mc/RunIISummer20UL18MiniAODv2/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/40000/DD0D06EF-5C77-8147-84F2-779DEB3E0F52.root"
+
 )
 
 #process.calibratedPatElectrons.isSynchronization = cms.bool(True) #process.calibratedPatElectrons.isSynchronization = cms.bool(True) # Not needed anymore since new EGamma smearing is event deterministic
 #process.calibratedMuons.isSynchronization = cms.bool(True)
 
-process.maxEvents.input = -1
+process.maxEvents.input = 1000
 #process.source.skipEvents = cms.untracked.uint32(5750)
 
 # Silence output

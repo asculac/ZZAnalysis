@@ -255,6 +255,7 @@ namespace {
   std::vector<float> LepPUIsoComponent;
   std::vector<float> LepCombRelIsoPF;
   std::vector<short> LepisLoose;
+  std::vector<short> LepisPFoverlap;
   std::vector<float> LepSF;
   std::vector<float> LepSF_Unc;
   std::vector<float> LepScale_Total_Up;
@@ -705,6 +706,7 @@ private:
   //edm::EDGetTokenT<pat::METCollection> metNoHFToken;
   edm::EDGetTokenT<pat::MuonCollection> muonToken;
   edm::EDGetTokenT<pat::ElectronCollection> electronToken;
+  //edm::EDGetTokenT<pat::ElectronCollection> pf_electronToken;
   edm::EDGetTokenT<HTXS::HiggsClassification> htxsToken;
   edm::EDGetTokenT<edm::MergeableCounter> preSkimToken;
   edm::EDGetTokenT<LHERunInfoProduct> lheRunInfoToken;
@@ -2443,6 +2445,7 @@ void HZZ4lNtupleMaker::FillCandidate(const pat::CompositeCandidate& cand, bool e
 	  LepPUIsoComponent.push_back( lepFlav==13 ? userdatahelpers::getUserFloat(leptons[i],"PFPUChargedHadIso") : 0. );
     LepCombRelIsoPF.push_back( combRelIsoPF[i] );
     LepisLoose.push_back(userdatahelpers::hasUserFloat(leptons[i],"isLoose") == 1 ? userdatahelpers::getUserFloat(leptons[i],"isLoose") : -2);
+    LepisPFoverlap.push_back(userdatahelpers::hasUserFloat(leptons[i],"isPFoverlap") == 1 ? userdatahelpers::getUserFloat(leptons[i],"isPFoverlap") : -2);
 
   }
 
@@ -3031,6 +3034,7 @@ void HZZ4lNtupleMaker::BookAllBranches(){
   myTree->Book("LepTime",LepTime, false);
   myTree->Book("LepisID",LepisID, false);
   myTree->Book("LepisLoose",LepisLoose, false);
+  myTree->Book("LepisPFoverlap",LepisPFoverlap, false);
   myTree->Book("LepBDT",LepBDT, false);
   myTree->Book("LepisCrack",LepisCrack, false);
   myTree->Book("LepMissingHit",LepMissingHit, false);

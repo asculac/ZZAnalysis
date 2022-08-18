@@ -481,7 +481,6 @@ process.softElectrons = cms.EDProducer("EleFiller",
         ),
    )
 
-
 process.electrons = cms.Sequence(process.egammaPostRecoSeq + process.selectedSlimmedElectrons + process.bareSoftElectrons + process.softElectrons)
 
 
@@ -952,8 +951,9 @@ CR_BESTCANDBASE = ("userFloat('d0.Z1Presel') && userFloat('d0.worstEleIso') <" +
                    "&& userFloat('d0.worstMuIso') <" + str(MUISOCUT) ) # To be revised
 
 CR_BESTCANDBASE_AA   = ("userFloat('d0.Z1Presel') && userFloat('d0.worstEleIso') <" + str(ELEISOCUT) +
-                        "&& userFloat('d0.worstMuIso') <" + str(MUISOCUT) + "&&" +
-                        Z2SIP) # base for AA CR: # Z1 with tight leptons passing SIP and ISO, mass cuts; SIP on Z2
+                        "&& userFloat('d0.worstMuIso') <" + str(MUISOCUT))
+                        # + "&&" + ---ANA- no sip cut for bkg estimation
+                        #Z2SIP) # base for AA CR: # Z1 with tight leptons passing SIP and ISO, mass cuts; SIP on Z2
 
 
 CR_BESTZLLss = ""
@@ -1756,8 +1756,10 @@ SkimPaths = cms.vstring('PVfilter') #Do not apply skim, just require a good PV
 
 # FIXME total kin filter?
 
+import os
+execfile(os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/MasterPy/VeryLowEle.py")
 
-if (ADDLOOSEELE) :
-    import os
-    execfile(os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/MasterPy/LooseEle.py")
-#    execfile(os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/MasterPy/TracklessEle.py")
+# if (ADDLOOSEELE) :
+#     import os
+#     execfile(os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/MasterPy/LooseEle.py")
+# #    execfile(os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/MasterPy/TracklessEle.py")

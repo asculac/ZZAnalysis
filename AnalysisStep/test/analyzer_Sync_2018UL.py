@@ -8,9 +8,9 @@ LEPTON_SETUP = 2018  # current default = 2018
 #RECORRECTMET = False #
 KINREFIT = False    # control KinZFitter (very slow)
 PROCESS_CR = False   # Uncomment to run CR paths and trees
-#ADDLOOSEELE = True  # Run paths for loose electrons
+ADDLOOSEELE = True  # Run paths for loose electrons
 #APPLYTRIG = False    # Skip events failing required triggers. They are stored with sel<0 if set to False
-#KEEPLOOSECOMB = True # Do not skip loose lepton ZZ combinations (for debugging)
+KEEPLOOSECOMB = True # Do not skip loose lepton ZZ combinations (for debugging)
 ADDZTREE = False # Add tree for Z analysis
 ADDLHEKINEMATICS = True  #
 FAILED_TREE_LEVEL = True # To print candTree_failed, if you don't want to save it comment this line
@@ -45,7 +45,9 @@ process.source.fileNames = cms.untracked.vstring(
 
 
 ### ULTRA-LEGACY PAPER - 2018 sync files
-"/store/mc/RunIISummer20UL18MiniAODv2/ttH_HToZZ_4LFilter_M125_TuneCP5_13TeV_powheg2_JHUGenV7011_pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/260000/C0DA604A-0549-7844-B58B-846A0F0D9EDD.root"
+"/store/mc/RunIISummer20UL18MiniAODv2/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/40000/DD0D06EF-5C77-8147-84F2-779DEB3E0F52.root"
+
+#"/store/mc/RunIISummer20UL18MiniAODv2/ttH_HToZZ_4LFilter_M125_TuneCP5_13TeV_powheg2_JHUGenV7011_pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/260000/C0DA604A-0549-7844-B58B-846A0F0D9EDD.root"
 
 ###Run2018A-ReReco-v2
         #'/store/data/Run2018A/DoubleMuon/MINIAOD/17Sep2018-v2/120000/39DE1F78-583A-1948-8E09-E47E33DCCBED.root'
@@ -57,7 +59,7 @@ process.source.fileNames = cms.untracked.vstring(
 #process.calibratedPatElectrons.isSynchronization = cms.bool(True) #not needed anymore since new EGamma smearing is event deterministic
 process.calibratedMuons.isSynchronization = cms.bool(True)
 
-process.maxEvents.input = -1
+process.maxEvents.input = 1000
 #process.source.skipEvents = cms.untracked.uint32(5750)
 
 # Silence output
