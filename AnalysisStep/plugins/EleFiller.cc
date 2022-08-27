@@ -19,6 +19,8 @@
 #include <ZZAnalysis/AnalysisStep/interface/CutSet.h>
 #include <ZZAnalysis/AnalysisStep/interface/LeptonIsoHelper.h>
 
+#include <ZZAnalysis/AnalysisStep/interface/MCHistoryTools.h>
+
 #include <vector>
 #include <string>
 #include "TRandom3.h"
@@ -41,6 +43,8 @@ class EleFiller : public edm::EDProducer {
   virtual void beginJob(){};
   virtual void produce(edm::Event&, const edm::EventSetup&);
   virtual void endJob(){};
+
+  
 
   edm::EDGetTokenT<pat::ElectronRefVector> electronToken;
   edm::EDGetTokenT<pat::ElectronRefVector> electronToken_bis;
@@ -177,6 +181,10 @@ EleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     //--- Trigger matching
     int HLTMatch = 0; //FIXME
 
+    //dodano za usporedbu iso
+    float trackIso = l.dr03TkSumPt();
+    //cout<<"track iso"<<endl<<trackIso;
+
 
     //-- Scale and smearing corrections are now stored in the miniAOD https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2#Energy_Scale_and_Smearing
     //-- Unchanged in UL implementation TWiki accessed on 27/04
@@ -204,7 +212,9 @@ EleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     float sigma_phi_dn = l.userFloat("energySigmaPhiDown") / l.energy();
 
 
+
     //--- Embed user variables
+    l.addUserFloat("trackIso",trackIso);
     l.addUserFloat("PFChargedHadIso",PFChargedHadIso);
     l.addUserFloat("PFNeutralHadIso",PFNeutralHadIso);
     l.addUserFloat("PFPhotonIso",PFPhotonIso);
@@ -218,6 +228,7 @@ EleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     l.addUserFloat("isBDT",isBDT);
     l.addUserFloat("isCrack",isCrack);
     l.addUserFloat("HLTMatch", HLTMatch);
+    //l.addUserCand("MCMatch",genMatch); // FIXME
     l.addUserFloat("missingHit", missingHit);
     l.addUserFloat("uncorrected_pt",uncorrected_pt);
     l.addUserFloat("scale_total_up",scale_total_up);
@@ -236,12 +247,13 @@ EleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     l.addUserFloat("sigma_phi_dn",sigma_phi_dn);
 
     //--- MC parent code
-//     MCHistoryTools mch(iEvent);
-//     if (mch.isMC()) {
-//       int MCParentCode = 0;
-//       //      int MCParentCode = mch.getParentCode(&l); //FIXME: does not work on cmg
-//       l.addUserFloat("MCParentCode",MCParentCode);
-//     }
+    // MCHistoryTools mch(iEvent);
+    // if (mch.isMC()) {
+    //   int MCParentCode = 0;
+    //   int MCParentCode = mch.getParentCode(&l); //FIXME: does not work on cmg
+    //   cout<<"Parent code"<<MCParentCode<<endl;
+    //   //l.addUserFloat("MCParentCode",MCParentCode);
+    // }
 
     //--- Check selection cut. Being done here, flags are not available; but this way we
     //    avoid wasting time on rejected leptons.

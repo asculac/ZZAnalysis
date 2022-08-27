@@ -42,6 +42,7 @@ process.softLooseElectrons = cms.EDProducer("LowptEleFiller",
         isIsoFSRUncorr  = cms.string("abs(1)"),#"userFloat('combRelIsoPF')<"+str(ELEISOCUT)),
         isLoose = cms.string("userFloat('isLOOSE')"), #FIXME: I'd set this to  (isGood&&!isGoodTight), that would be clearer I think.
         isPFoverlap = cms.string("userFloat('isPFoverlap')"),
+        trackIso = cms.string("userFloat('trackIso')"),
 #       Note: passCombRelIsoPFFSRCorr is currently set in LeptonPhotonMatcher for new FSR strategy; in ZZCandidateFiller for the old one
         ),
    mvaValuesMap = cms.InputTag(""), 

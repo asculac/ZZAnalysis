@@ -254,6 +254,7 @@ namespace {
   std::vector<float> LepPhotonIso;
   std::vector<float> LepPUIsoComponent;
   std::vector<float> LepCombRelIsoPF;
+  std::vector<float> LepTrackIso;
   std::vector<short> LepisLoose;
   std::vector<short> LepisPFoverlap;
   std::vector<float> LepSF;
@@ -2228,6 +2229,7 @@ void HZZ4lNtupleMaker::FillCandidate(const pat::CompositeCandidate& cand, bool e
   LepPhotonIso.clear();
   LepPUIsoComponent.clear();
   LepCombRelIsoPF.clear();
+  LepTrackIso.clear();
 
   LepSF.clear();
   LepSF_Unc.clear();
@@ -2444,6 +2446,7 @@ void HZZ4lNtupleMaker::FillCandidate(const pat::CompositeCandidate& cand, bool e
     LepPhotonIso.push_back( userdatahelpers::getUserFloat(leptons[i],"PFPhotonIso") );
 	  LepPUIsoComponent.push_back( lepFlav==13 ? userdatahelpers::getUserFloat(leptons[i],"PFPUChargedHadIso") : 0. );
     LepCombRelIsoPF.push_back( combRelIsoPF[i] );
+    LepTrackIso.push_back(userdatahelpers::hasUserFloat(leptons[i],"trackIso") == 1 ? userdatahelpers::getUserFloat(leptons[i],"trackIso") : -99);
     LepisLoose.push_back(userdatahelpers::hasUserFloat(leptons[i],"isLoose") == 1 ? userdatahelpers::getUserFloat(leptons[i],"isLoose") : -2);
     LepisPFoverlap.push_back(userdatahelpers::hasUserFloat(leptons[i],"isPFoverlap") == 1 ? userdatahelpers::getUserFloat(leptons[i],"isPFoverlap") : -2);
 
@@ -3043,6 +3046,7 @@ void HZZ4lNtupleMaker::BookAllBranches(){
   myTree->Book("LepPhotonIso",LepPhotonIso, false);
   myTree->Book("LepPUIsoComponent",LepPUIsoComponent, false);
   myTree->Book("LepCombRelIsoPF",LepCombRelIsoPF, false);
+  myTree->Book("LepTrackIso",LepTrackIso, false);
   myTree->Book("LepSF",LepSF, false);
   myTree->Book("LepSF_Unc",LepSF_Unc, false);
   myTree->Book("LepScale_Total_Up",LepScale_Total_Up, false);

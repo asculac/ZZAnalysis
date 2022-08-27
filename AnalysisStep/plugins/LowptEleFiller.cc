@@ -124,6 +124,8 @@ LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     cout<<"PFPhotonIso "<<PFPhotonIso<<endl;
     cout<<"rho "<<rho<<endl;
 
+
+
     float SCeta = l.superCluster()->eta();
     float fSCeta = fabs(SCeta);
 
@@ -183,6 +185,9 @@ LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     float electronID= l.electronID("ID");
     //cout<< "electronID" << electronID;
 
+    float trackIso = l.dr03TkSumPt();
+    //cout<<"track iso"<<endl<<trackIso;
+
     bool isBDT = true;
     bool isLOOSE = true;
     bool isPFoverlap =false;
@@ -197,7 +202,7 @@ LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     }
     if(clean_out) 
-    
+    //isPFoverlap =true;
     continue; //-- ako ostavimo njega onda samo micemo low pt duplikate 
     //if(clean_out) isPFoverlap =true; //ostavljamo lowpt duplikate ali s isPFoverlap flagom
   
@@ -241,6 +246,7 @@ LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 //1;
 
     //--- Embed user variables
+    l.addUserFloat("trackIso",trackIso);
     l.addUserFloat("PFChargedHadIso",PFChargedHadIso);
     l.addUserFloat("PFNeutralHadIso",PFNeutralHadIso);
     l.addUserFloat("PFPhotonIso",PFPhotonIso);
