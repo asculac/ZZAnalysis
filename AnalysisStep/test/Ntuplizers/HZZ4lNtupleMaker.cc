@@ -67,7 +67,6 @@
 #include "ZZAnalysis/AnalysisStep/interface/EwkCorrections.h"
 #include "ZZAnalysis/AnalysisStep/src/kFactors.C"
 #include <ZZAnalysis/AnalysisStep/interface/bitops.h>
-#include <ZZAnalysis/AnalysisStep/interface/Fisher.h>
 #include <ZZAnalysis/AnalysisStep/interface/LeptonIsoHelper.h>
 #include <ZZAnalysis/AnalysisStep/interface/PhotonIDHelper.h>
 #include <ZZAnalysis/AnalysisStep/interface/JetCleaner.h>
@@ -99,6 +98,7 @@ namespace {
   bool addVtxFit = false;
   bool addFSRDetails = false;
   bool addQGLInputs = true;
+  bool addGenAngles = false;
   bool skipMuDataMCWeight = false; // skip computation of data/MC weight for mu
   bool skipEleDataMCWeight = false; // skip computation of data/MC weight for ele
   bool skipFakeWeight = true;   // skip computation of fake rate weight for CRs
@@ -351,11 +351,10 @@ namespace {
   std::vector<float> JetJERUp ;
   std::vector<float> JetJERDown ;
 
+  // FIXME: these are likely obsolete (were computed toghether with Fisher discriminant)
   Float_t DiJetMass  = -99;
-//   Float_t DiJetMassPlus  = -99;
-//   Float_t DiJetMassMinus  = -99;
   Float_t DiJetDEta  = -99;
-  Float_t DiJetFisher  = -99;
+
   Short_t nExtraLep  = 0;
   Short_t nExtraZ  = 0;
   std::vector<float> ExtraLepPt;
@@ -1205,20 +1204,22 @@ void HZZ4lNtupleMaker::analyze(const edm::Event& event, const edm::EventSetup& e
         throw e;
       }
       auto nominal = genweights[0];
-      PythiaWeight_isr_muRoneoversqrt2 = genweights[2] / nominal;
-      PythiaWeight_fsr_muRoneoversqrt2 = genweights[3] / nominal;
-      PythiaWeight_isr_muRsqrt2 = genweights[4] / nominal;
-      PythiaWeight_fsr_muRsqrt2 = genweights[5] / nominal;
+      
+      // see twiki here with definitions and order : https://twiki.cern.ch/twiki/bin/view/CMS/HowToPDF#Parton_shower_weights
+      PythiaWeight_isr_muRoneoversqrt2 = genweights[24] / nominal;
+      PythiaWeight_fsr_muRoneoversqrt2 = genweights[2] / nominal;
+      PythiaWeight_isr_muRsqrt2 = genweights[25] / nominal;
+      PythiaWeight_fsr_muRsqrt2 = genweights[3] / nominal;
 
-      PythiaWeight_isr_muR0p5 = genweights[6] / nominal;
-      PythiaWeight_fsr_muR0p5 = genweights[7] / nominal;
-      PythiaWeight_isr_muR2 = genweights[8] / nominal;
-      PythiaWeight_fsr_muR2 = genweights[9] / nominal;
+      PythiaWeight_isr_muR0p5 = genweights[26] / nominal;
+      PythiaWeight_fsr_muR0p5 = genweights[4] / nominal;
+      PythiaWeight_isr_muR2 = genweights[27] / nominal;
+      PythiaWeight_fsr_muR2 = genweights[5] / nominal;
 
-      PythiaWeight_isr_muR0p25 = genweights[10] / nominal;
-      PythiaWeight_fsr_muR0p25 = genweights[11] / nominal;
-      PythiaWeight_isr_muR4 = genweights[12] / nominal;
-      PythiaWeight_fsr_muR4 = genweights[13] / nominal;
+      PythiaWeight_isr_muR0p25 = genweights[28] / nominal;
+      PythiaWeight_fsr_muR0p25 = genweights[6] / nominal;
+      PythiaWeight_isr_muR4 = genweights[29] / nominal;
+      PythiaWeight_fsr_muR4 = genweights[7] / nominal;
     } else {
       PythiaWeight_isr_muRsqrt2 = PythiaWeight_isr_muRoneoversqrt2 = PythiaWeight_isr_muR2 =
       PythiaWeight_isr_muR0p5 = PythiaWeight_isr_muR4 = PythiaWeight_isr_muR0p25 =
@@ -2293,9 +2294,6 @@ void HZZ4lNtupleMaker::FillCandidate(const pat::CompositeCandidate& cand, bool e
 
     DiJetMass  = cand.userFloat("DiJetMass");
     DiJetDEta  = cand.userFloat("DiJetDEta");
-    DiJetFisher  = cand.userFloat("DiJetFisher");
-    //    DiJetMassPlus  = cand.userFloat("DiJetMassPlus");
-    //    DiJetMassMinus  = cand.userFloat("DiJetMassMinus");
 
     //Fill the angular variables
     helcosthetaZ1 = cand.userFloat("costheta1");
@@ -2429,16 +2427,18 @@ void HZZ4lNtupleMaker::FillCandidate(const pat::CompositeCandidate& cand, bool e
     LepBDT  .push_back( userdatahelpers::getUserFloat(leptons[i],"BDT") );
     LepisCrack.push_back( lepFlav==11 ? userdatahelpers::getUserFloat(leptons[i],"isCrack") : 0 );
     LepMissingHit.push_back( lepFlav==11 ? userdatahelpers::getUserFloat(leptons[i],"missingHit") : 0 );
-    LepScale_Total_Up.push_back( userdatahelpers::getUserFloat(leptons[i],"scale_total_up") );
-    LepScale_Total_Dn.push_back( userdatahelpers::getUserFloat(leptons[i],"scale_total_dn") );
+    if (userdatahelpers::hasUserFloat(leptons[i],"scale_total_up")) { // These are not set when APPLYMUCORR=false
+      LepScale_Total_Up.push_back( userdatahelpers::getUserFloat(leptons[i],"scale_total_up") );
+      LepScale_Total_Dn.push_back( userdatahelpers::getUserFloat(leptons[i],"scale_total_dn") );
+      LepSigma_Total_Up.push_back( userdatahelpers::getUserFloat(leptons[i],"sigma_total_up") );
+      LepSigma_Total_Dn.push_back( userdatahelpers::getUserFloat(leptons[i],"sigma_total_dn") );
+    }
     LepScale_Stat_Up.push_back( lepFlav==11 ? userdatahelpers::getUserFloat(leptons[i],"scale_stat_up") : -99. );
     LepScale_Stat_Dn.push_back( lepFlav==11 ? userdatahelpers::getUserFloat(leptons[i],"scale_stat_dn") : -99. );
     LepScale_Syst_Up.push_back( lepFlav==11 ? userdatahelpers::getUserFloat(leptons[i],"scale_syst_up") : -99. );
     LepScale_Syst_Dn.push_back( lepFlav==11 ? userdatahelpers::getUserFloat(leptons[i],"scale_syst_dn") : -99. );
     LepScale_Gain_Up.push_back( lepFlav==11 ? userdatahelpers::getUserFloat(leptons[i],"scale_gain_up") : -99. );
     LepScale_Gain_Dn.push_back( lepFlav==11 ? userdatahelpers::getUserFloat(leptons[i],"scale_gain_dn") : -99. );
-    LepSigma_Total_Up.push_back( userdatahelpers::getUserFloat(leptons[i],"sigma_total_up") );
-    LepSigma_Total_Dn.push_back( userdatahelpers::getUserFloat(leptons[i],"sigma_total_dn") );
     LepSigma_Rho_Up.push_back( lepFlav==11 ? userdatahelpers::getUserFloat(leptons[i],"sigma_rho_up") : -99. );
     LepSigma_Rho_Dn.push_back( lepFlav==11 ? userdatahelpers::getUserFloat(leptons[i],"sigma_rho_dn") : -99. );
     LepSigma_Phi_Up.push_back( lepFlav==11 ? userdatahelpers::getUserFloat(leptons[i],"sigma_phi_up") : -99. );
@@ -2829,10 +2829,10 @@ void HZZ4lNtupleMaker::FillLepGenInfo(Short_t Lep1Id, Short_t Lep2Id, Short_t Le
   GenLep4Phi=Lep4.Phi();
   GenLep4Id=Lep4Id;
 
-  //can comment this back in if Gen angles are needed for any reason...
-  // TUtil::computeAngles(zzanalysis::tlv(Lep1), Lep1Id, zzanalysis::tlv(Lep2), Lep2Id, zzanalysis::tlv(Lep3), Lep3Id, zzanalysis::tlv(Lep4), Lep4Id, Gencosthetastar, GenhelcosthetaZ1, GenhelcosthetaZ2, Genhelphi, GenphistarZ1);
-  TUtil::computeAngles(Gencosthetastar, GenhelcosthetaZ1, GenhelcosthetaZ2, Genhelphi, GenphistarZ1, zzanalysis::tlv(Lep1), Lep1Id, zzanalysis::tlv(Lep2), Lep2Id, zzanalysis::tlv(Lep3), Lep3Id, zzanalysis::tlv(Lep4), Lep4Id);
-
+  if (addGenAngles) {
+    TUtil::computeAngles(Gencosthetastar, GenhelcosthetaZ1, GenhelcosthetaZ2, Genhelphi, GenphistarZ1, zzanalysis::tlv(Lep1), Lep1Id, zzanalysis::tlv(Lep2), Lep2Id, zzanalysis::tlv(Lep3), Lep3Id, zzanalysis::tlv(Lep4), Lep4Id);
+  }
+  
   return;
 }
 
@@ -3145,10 +3145,7 @@ void HZZ4lNtupleMaker::BookAllBranches(){
   myTree->Book("JetPUValue", JetPUValue, failedTreeLevel >= fullFailedTree);
 
   myTree->Book("DiJetMass",DiJetMass, false);
-//   myTree->Book("DiJetMassPlus",DiJetMassPlus, false); // FIXME: add back once filled again
-//   myTree->Book("DiJetMassMinus",DiJetMassMinus, false);
   myTree->Book("DiJetDEta",DiJetDEta, false);
-  myTree->Book("DiJetFisher",DiJetFisher, false);
 
   //Photon variables
   myTree->Book("PhotonPt",PhotonPt, failedTreeLevel >= fullFailedTree);
@@ -3245,11 +3242,13 @@ void HZZ4lNtupleMaker::BookAllBranches(){
     myTree->Book("GenLep2Iso", GenLep2Iso, failedTreeLevel >= minimalFailedTree); //AT
     myTree->Book("GenLep3Iso", GenLep3Iso, failedTreeLevel >= minimalFailedTree); //AT
     myTree->Book("GenLep4Iso", GenLep4Iso, failedTreeLevel >= minimalFailedTree); //AT
-    myTree->Book("Gencosthetastar", Gencosthetastar, failedTreeLevel >= minimalFailedTree); //AT
-    myTree->Book("GenhelcosthetaZ1", GenhelcosthetaZ1, failedTreeLevel >= minimalFailedTree); //AT
-    myTree->Book("GenhelcosthetaZ2", GenhelcosthetaZ2, failedTreeLevel >= minimalFailedTree); //AT
-    myTree->Book("Genhelphi", Genhelphi, failedTreeLevel >= minimalFailedTree); //AT
-    myTree->Book("GenphistarZ1", Genhelphi, failedTreeLevel >= minimalFailedTree); //AT
+    if (addGenAngles) {
+      myTree->Book("Gencosthetastar", Gencosthetastar, failedTreeLevel >= minimalFailedTree); //AT
+      myTree->Book("GenhelcosthetaZ1", GenhelcosthetaZ1, failedTreeLevel >= minimalFailedTree); //AT
+      myTree->Book("GenhelcosthetaZ2", GenhelcosthetaZ2, failedTreeLevel >= minimalFailedTree); //AT
+      myTree->Book("Genhelphi", Genhelphi, failedTreeLevel >= minimalFailedTree); //AT
+      myTree->Book("GenphistarZ1", Genhelphi, failedTreeLevel >= minimalFailedTree); //AT
+    }
     myTree->Book("GenJetPt", GenJetPt, failedTreeLevel >= minimalFailedTree); //ATjets
     myTree->Book("GenJetMass", GenJetMass, failedTreeLevel >= minimalFailedTree); //ATjets
     myTree->Book("GenJetEta", GenJetEta, failedTreeLevel >= minimalFailedTree); //ATjets

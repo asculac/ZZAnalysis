@@ -1,7 +1,7 @@
 #!/bin/tcsh -fe
 #
 # Instructions:
-# wget -O ${TMPDIR}/checkout_10X.csh https://raw.githubusercontent.com/CJLST/ZZAnalysis/Run2_CutBased_UL/checkout_10X.csh
+# wget -O ${TMPDIR}/checkout_10X.csh https://raw.githubusercontent.com/CJLST/ZZAnalysis/Run2UL_22/checkout_10X.csh
 # cd $CMSSW_BASE/src
 # cmsenv
 # chmod u+x ${TMPDIR}/checkout_10X.csh
@@ -24,19 +24,16 @@ mv EgammaPostRecoTools/python/EgammaPostRecoTools.py RecoEgamma/EgammaTools/pyth
 git cms-addpkg EgammaAnalysis/ElectronTools
 (rm -rf EgammaAnalysis/ElectronTools/data;git clone https://github.com/jainshilpi/EgammaAnalysis-ElectronTools.git -b ULSSfiles_correctScaleSysMC EgammaAnalysis/ElectronTools/data;)
 
-#UL 2016, 2017 and 2018 retraining for electron BDT
-#Not needed anymore, now MVA weights and cfg files are stored in CMSSW dataset and accessed directly via VID
-#git cms-merge-topic bonanomi:ElectronsMVA_UL
-
 #### Please do not add any custom (non-CMSSW) package before this line ####
 #ZZAnalysis
 git clone https://github.com/CJLST/ZZAnalysis.git ZZAnalysis
-(cd ZZAnalysis; git checkout Run2_CutBased_UL )
+(cd ZZAnalysis; git checkout Run2UL_22)
 
 # Muon MVA
 git cms-addpkg CondFormats/EgammaObjects
 git cms-addpkg CommonTools/MVAUtils
 git clone https://github.com/bonanomi/MuonMVAReader.git MuonMVAReader
+(cd MuonMVAReader; git checkout 3d53269)
 
 #MELA Analytics
 git clone https://github.com/MELALabs/MelaAnalytics.git
@@ -44,7 +41,7 @@ git clone https://github.com/MELALabs/MelaAnalytics.git
 
 #Common LHE tools
 git clone https://github.com/usarica/CommonLHETools.git
-(cd CommonLHETools; git checkout -b from-v140 v1.4.0)
+(cd CommonLHETools; git checkout -b from-v141 v1.4.1)
 
 #MELA
 git clone https://github.com/JHUGen/JHUGenMELA.git JHUGenMELA
@@ -83,3 +80,8 @@ $CMSSW_BASE/src/JHUGenMELA/MELA/data/retrieve.csh $SCRAM_ARCH mcfm_707
 #kinematic refitting
 git clone https://github.com/mhl0116/KinZfitter-1.git KinZfitter
 (cd KinZfitter ; git checkout -b from-27daebb 27daebb)
+
+#NanoAODTools
+git clone https://github.com/cms-nanoAOD/nanoAOD-tools.git PhysicsTools/NanoAODTools
+(cd PhysicsTools/NanoAODTools ; git checkout -b from-c32f055 c32f055)
+
