@@ -31,6 +31,7 @@ process.softLooseElectrons = cms.EDProducer("LowptEleFiller",
    src    = cms.InputTag("bareSoftLowElectrons"),
    src_pf    = cms.InputTag("bareSoftElectrons1"),
    src_vertex= cms.InputTag("offlineSlimmedPrimaryVertices"),
+   src_gen = cms.InputTag("prunedGenParticles"),
    sampleType = cms.int32(SAMPLE_TYPE),
    setup = cms.int32(LEPTON_SETUP), # define the set of effective areas, rho corrections, etc.
    cut = cms.string(''),# removed cut because variable is in Spring15 ID  && userFloat('missingHit')<=1"),
@@ -38,7 +39,7 @@ process.softLooseElectrons = cms.EDProducer("LowptEleFiller",
         ID = cms.string("userFloat('isBDT')"),
         isSIP = cms.string(SIP_LOOSE),
         isGood = cms.string("abs(1)"),#GOODLEPTON_LOOSE),#(GOODLEPTON_LOOSE),
-        isGoodRegular = cms.string("abs(1)"),#GOODELECTRON), # the "regular" (tight) selection
+        isGoodRegular = cms.string("abs(1)"),#GOODELECTRON), # the "regular" (tight) selection --makla Ana --low pt electrons already pass ID by definition, and we want to remove SIP cut
         isIsoFSRUncorr  = cms.string("abs(1)"),#"userFloat('combRelIsoPF')<"+str(ELEISOCUT)),
         isLoose = cms.string("userFloat('isLOOSE')"), #FIXME: I'd set this to  (isGood&&!isGoodTight), that would be clearer I think.
         isPFoverlap = cms.string("userFloat('isPFoverlap')"),

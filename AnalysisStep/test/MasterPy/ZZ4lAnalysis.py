@@ -316,7 +316,7 @@ if(IsMC):
 
 SIP =  "userFloat('SIP') < 4"
 #GOODMUON = "(userFloat('ID') || (userFloat('isTrackerHighPtMuon') && pt>200)) && " + SIP //used when MVA is applied
-GOODELECTRON = "userFloat('ID') && " + SIP
+GOODELECTRON = "userFloat('ID') && " + SIP 
 GOODMUON     = "userFloat('ID') && " + SIP
 TIGHTMUON    = "userFloat('isPFMuon') || (userFloat('isTrackerHighPtMuon') && pt>200)"
 
@@ -466,9 +466,22 @@ process.bareSoftElectrons = cms.EDFilter("PATElectronRefSelector",
    src = cms.InputTag("selectedSlimmedElectrons"),
    cut = cms.string("") #move pt>7 && abs(eta)<2.5 cut to softElectrons so that smear/scale corrections are done before the pT cut
    )
+process.electronMatch = cms.EDProducer("MCMatcher",       # cut on deltaR, deltaPt/Pt; pick best by deltaR
+                                       src         = cms.InputTag("bareSoftElectrons"), # RECO objects to match
+                                       matched     = cms.InputTag("prunedGenParticles"), # mc-truth particle collection
+                                       mcPdgId     = cms.vint32(11),               # one or more PDG ID (11 = electron); absolute values (see below)
+                                       checkCharge = cms.bool(True),               # True = require RECO and MC objects to have the same charge
+                                       mcStatus    = cms.vint32(1),                # PYTHIA status code (1 = stable, 2 = shower, 3 = hard scattering)
+                                       maxDeltaR   = cms.double(0.5),              # Minimum deltaR for the match
+                                       maxDPtRel   = cms.double(0.5),              # Minimum deltaPt/Pt for the match
+                                       resolveAmbiguities    = cms.bool(True),     # Forbid two RECO objects to match to the same GEN object
+                                       resolveByMatchQuality = cms.bool(False),    # False = just match input in order; True = pick lowest deltaR pair first
+                                       )
+
 
 process.softElectrons = cms.EDProducer("EleFiller",
    src    = cms.InputTag("bareSoftElectrons"),
+   src_gen = cms.InputTag("prunedGenParticles"),
    sampleType = cms.int32(SAMPLE_TYPE),
    setup = cms.int32(LEPTON_SETUP), # define the set of effective areas, rho corrections, etc.
    cut = cms.string("pt>7 && abs(eta) < 2.5 && userFloat('dxy')<0.5 && userFloat('dz')<1"),
@@ -481,7 +494,7 @@ process.softElectrons = cms.EDProducer("EleFiller",
         ),
    )
 
-process.electrons = cms.Sequence(process.egammaPostRecoSeq + process.selectedSlimmedElectrons + process.bareSoftElectrons + process.softElectrons)
+process.electrons = cms.Sequence(process.egammaPostRecoSeq + process.selectedSlimmedElectrons + process.bareSoftElectrons + process.electronMatch + process.softElectrons)
 
 
 
@@ -510,17 +523,6 @@ process.softPhotons = cms.EDProducer("Philler",
    )
 
 
-process.electronMatch = cms.EDProducer("MCMatcher",       # cut on deltaR, deltaPt/Pt; pick best by deltaR
-                                       src         = cms.InputTag("bareSoftElectrons"), # RECO objects to match
-                                       matched     = cms.InputTag("prunedGenParticles"), # mc-truth particle collection
-                                       mcPdgId     = cms.vint32(11),               # one or more PDG ID (11 = electron); absolute values (see below)
-                                       checkCharge = cms.bool(True),               # True = require RECO and MC objects to have the same charge
-                                       mcStatus    = cms.vint32(1),                # PYTHIA status code (1 = stable, 2 = shower, 3 = hard scattering)
-                                       maxDeltaR   = cms.double(0.5),              # Minimum deltaR for the match
-                                       maxDPtRel   = cms.double(0.5),              # Minimum deltaPt/Pt for the match
-                                       resolveAmbiguities    = cms.bool(True),     # Forbid two RECO objects to match to the same GEN object
-                                       resolveByMatchQuality = cms.bool(False),    # False = just match input in order; True = pick lowest deltaR pair first
-                                       )
 
 
 ### ----------------------------------------------------------------------

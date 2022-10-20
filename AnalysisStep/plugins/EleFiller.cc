@@ -44,10 +44,12 @@ class EleFiller : public edm::EDProducer {
   virtual void produce(edm::Event&, const edm::EventSetup&);
   virtual void endJob(){};
 
-  
+  void findFirstNonElectronMother(const reco::Candidate *particle,
+						 int &ancestorPID, int &ancestorStatus);
 
   edm::EDGetTokenT<pat::ElectronRefVector> electronToken;
   edm::EDGetTokenT<pat::ElectronRefVector> electronToken_bis;
+  edm::EDGetTokenT<reco::GenParticleCollection> genToken;
   int sampleType;
   int setup;
   const StringCutObjectSelector<pat::Electron, true> cut;
@@ -60,6 +62,7 @@ class EleFiller : public edm::EDProducer {
 
 EleFiller::EleFiller(const edm::ParameterSet& iConfig) :
   electronToken(consumes<pat::ElectronRefVector>(iConfig.getParameter<edm::InputTag>("src"))),
+  genToken(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("src_gen"))),
   sampleType(iConfig.getParameter<int>("sampleType")),
   setup(iConfig.getParameter<int>("setup")),
   cut(iConfig.getParameter<std::string>("cut")),
@@ -89,6 +92,9 @@ EleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   edm::Handle<vector<Vertex> > vertices;
   iEvent.getByToken(vtxToken,vertices);
+
+  edm::Handle<reco::GenParticleCollection>  genParticles;
+  iEvent.getByToken(genToken, genParticles);
 
   // Output collection
   auto result = std::make_unique<pat::ElectronCollection>();
@@ -192,6 +198,54 @@ EleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     float corr_factor = l.userFloat("ecalTrkEnergyPostCorr") / l.energy();//get scale/smear correction factor directly from miniAOD
     //scale and smsear electron
     l.setP4(reco::Particle::PolarLorentzVector(l.pt()*corr_factor, l.eta(), l.phi(), l.mass()*corr_factor));
+    
+    int genMatch = 99;
+    double dR = 999;
+    double charge_reco=l.charge();
+    double charge_gen=-99;
+    reco::GenParticle const* closestElectron = nullptr;
+    for (auto&& particle : *(genParticles.product())) {
+      // Drop everything that is not electron or not status 1
+      if (abs(particle.pdgId()) != 11 || particle.status() != 1)
+        continue;
+      //
+      double dRtmp = reco::deltaR(l.p4(), particle.p4());
+      if (dRtmp < dR) {
+        dR = dRtmp;
+        closestElectron = &particle;
+         charge_gen=particle.charge();
+      }
+    }
+
+    int ancestorPID = -999; 
+    int ancestorStatus = -999;
+    findFirstNonElectronMother(closestElectron, ancestorPID, ancestorStatus);
+    // See if the closest electron is close enough. If not, no match found.
+    if (closestElectron == nullptr || dR >= 0.1){ //PROVJERIT!! bilo dR_ umisto 0.1
+      cout<<" UNMATCHED"<<endl;
+      genMatch=0;
+      }
+    
+    else if( ancestorPID == -999 && ancestorStatus == -999 ){
+      // No non-electron parent??? This should never happen.
+      // Complain.
+      printf("ElectronNtupler: ERROR! Electron does not apper to have a non-electron parent\n");
+      cout<<" UNMATCHED"<<endl;//return UNMATCHED;
+      genMatch=0;
+    }
+    else if( abs(ancestorPID) > 50 ){// && ancestorStatus == 2 )
+      cout<<" TRUE_NON_PROMPT_ELECTRON"<<endl;//return TRUE_NON_PROMPT_ELECTRON;
+      genMatch=3;
+    }
+    else  if( abs(ancestorPID) == 23 && ancestorStatus == 22 ){
+      cout<<" TRUE_ELECTRON_FROM_Z"<<endl;//return TRUE_ELECTRON_FROM_Z;
+      genMatch=1;
+    }
+    // What remains is true prompt electrons
+    else {
+      cout<<" TRUE_PROMPT_ELECTRON"<<endl;
+      genMatch=2;//return TRUE_PROMPT_ELECTRON;
+    }
 
     //get all scale uncertainties and their breakdown
     float scale_total_up = l.userFloat("energyScaleUp") / l.energy();
@@ -214,6 +268,9 @@ EleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 
     //--- Embed user variables
+    l.addUserFloat("genCharge",charge_gen);
+    l.addUserFloat("recoCharge",charge_reco);
+    l.addUserFloat("genMatch",genMatch);
     l.addUserFloat("trackIso",trackIso);
     l.addUserFloat("PFChargedHadIso",PFChargedHadIso);
     l.addUserFloat("PFNeutralHadIso",PFNeutralHadIso);
@@ -270,5 +327,25 @@ EleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 }
 
 
+void EleFiller::findFirstNonElectronMother(const reco::Candidate *particle,
+						 int &ancestorPID, int &ancestorStatus){
+
+  if( particle == 0 ){
+    printf("ElectronNtupler: ERROR! null candidate pointer, this should never happen\n");
+    return;
+  }
+
+  // Is this the first non-electron parent? If yes, return, otherwise go deeper into recursion
+  if( abs(particle->pdgId()) == 11 || (abs(particle->pdgId()) == 23 && (particle->status())!=22)){
+    //std::cout << "Electron Ancestor " << particle->mother(0)->pdgId() << " Status " << particle->mother(0)->status() <<std::endl; 
+    findFirstNonElectronMother(particle->mother(0), ancestorPID, ancestorStatus);
+  }
+  else{
+    ancestorPID = particle->pdgId();
+    ancestorStatus = particle->status();
+    //std::cout << "Particle Id " << ancestorPID << " Status " << ancestorStatus <<std::endl;
+  }
+  return;
+}
 #include <FWCore/Framework/interface/MakerMacros.h>
 DEFINE_FWK_MODULE(EleFiller);

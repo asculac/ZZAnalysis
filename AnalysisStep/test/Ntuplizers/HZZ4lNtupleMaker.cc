@@ -255,6 +255,9 @@ namespace {
   std::vector<float> LepPUIsoComponent;
   std::vector<float> LepCombRelIsoPF;
   std::vector<float> LepTrackIso;
+  std::vector<float> LepGenMatch;
+  std::vector<float> LepGenCharge;
+  std::vector<float> LepRecoCharge;
   std::vector<short> LepisLoose;
   std::vector<short> LepisPFoverlap;
   std::vector<float> LepSF;
@@ -2230,6 +2233,9 @@ void HZZ4lNtupleMaker::FillCandidate(const pat::CompositeCandidate& cand, bool e
   LepPUIsoComponent.clear();
   LepCombRelIsoPF.clear();
   LepTrackIso.clear();
+  LepGenMatch.clear();
+  LepGenCharge.clear();
+  LepRecoCharge.clear();
 
   LepSF.clear();
   LepSF_Unc.clear();
@@ -2447,6 +2453,9 @@ void HZZ4lNtupleMaker::FillCandidate(const pat::CompositeCandidate& cand, bool e
 	  LepPUIsoComponent.push_back( lepFlav==13 ? userdatahelpers::getUserFloat(leptons[i],"PFPUChargedHadIso") : 0. );
     LepCombRelIsoPF.push_back( combRelIsoPF[i] );
     LepTrackIso.push_back(userdatahelpers::hasUserFloat(leptons[i],"trackIso") == 1 ? userdatahelpers::getUserFloat(leptons[i],"trackIso") : -99);
+    LepGenMatch.push_back(userdatahelpers::hasUserFloat(leptons[i],"genMatch") == 1 ? userdatahelpers::getUserFloat(leptons[i],"genMatch") : -99);
+    LepGenCharge.push_back(userdatahelpers::hasUserFloat(leptons[i],"genCharge") == 1 ? userdatahelpers::getUserFloat(leptons[i],"genCharge") : -99);
+    LepRecoCharge.push_back(userdatahelpers::hasUserFloat(leptons[i],"recoCharge") == 1 ? userdatahelpers::getUserFloat(leptons[i],"recoCharge") : -99);
     LepisLoose.push_back(userdatahelpers::hasUserFloat(leptons[i],"isLoose") == 1 ? userdatahelpers::getUserFloat(leptons[i],"isLoose") : -2);
     LepisPFoverlap.push_back(userdatahelpers::hasUserFloat(leptons[i],"isPFoverlap") == 1 ? userdatahelpers::getUserFloat(leptons[i],"isPFoverlap") : -2);
 
@@ -3047,6 +3056,9 @@ void HZZ4lNtupleMaker::BookAllBranches(){
   myTree->Book("LepPUIsoComponent",LepPUIsoComponent, false);
   myTree->Book("LepCombRelIsoPF",LepCombRelIsoPF, false);
   myTree->Book("LepTrackIso",LepTrackIso, false);
+  myTree->Book("LepGenMatch",LepGenMatch, false);
+  myTree->Book("LepGenCharge",LepGenCharge, false);
+  myTree->Book("LepRecoCharge",LepRecoCharge, false);
   myTree->Book("LepSF",LepSF, false);
   myTree->Book("LepSF_Unc",LepSF_Unc, false);
   myTree->Book("LepScale_Total_Up",LepScale_Total_Up, false);

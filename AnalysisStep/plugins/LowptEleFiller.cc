@@ -46,8 +46,12 @@ class LowptEleFiller : public edm::EDProducer {
   virtual void produce(edm::Event&, const edm::EventSetup&);
   virtual void endJob(){};
 
+  void findFirstNonElectronMother(const reco::Candidate *particle,
+						 int &ancestorPID, int &ancestorStatus);
+
   edm::EDGetTokenT<pat::ElectronRefVector> electronToken;
   edm::EDGetTokenT<pat::ElectronRefVector> pf_electronToken;
+  edm::EDGetTokenT<reco::GenParticleCollection> genToken;
   edm::EDGetTokenT<pat::ElectronRefVector> electronToken_bis;
   edm::EDGetTokenT<reco::VertexCollection> vertexSrc_;
   int sampleType;
@@ -63,6 +67,7 @@ class LowptEleFiller : public edm::EDProducer {
 LowptEleFiller::LowptEleFiller(const edm::ParameterSet& iConfig) :
   electronToken(consumes<pat::ElectronRefVector>(iConfig.getParameter<edm::InputTag>("src"))),
   pf_electronToken(consumes<pat::ElectronRefVector>(iConfig.getParameter<edm::InputTag>("src_pf"))),
+  genToken(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("src_gen"))),
   vertexSrc_(consumes<reco::VertexCollection> ( iConfig.getParameter<edm::InputTag>("src_vertex") )),
   sampleType(iConfig.getParameter<int>("sampleType")),
   setup(iConfig.getParameter<int>("setup")),
@@ -82,13 +87,16 @@ LowptEleFiller::~LowptEleFiller(){
 void
 LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  cout<<"test";
   // Get leptons and rho
   edm::Handle<pat::ElectronRefVector> electronHandle;
   iEvent.getByToken(electronToken, electronHandle);
 
   edm::Handle<pat::ElectronRefVector> pf_electronHandle;
   iEvent.getByToken(pf_electronToken, pf_electronHandle);
+
+  edm::Handle<reco::GenParticleCollection>  genParticles;
+  iEvent.getByToken(genToken, genParticles);
+
 
   edm::Handle<double> rhoHandle;
   iEvent.getByToken(rhoToken, rhoHandle);
@@ -119,10 +127,11 @@ LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     float PFChargedHadIso   = l.pfIsolationVariables().sumChargedHadronPt;
     float PFNeutralHadIso   = l.pfIsolationVariables().sumNeutralHadronEt;
     float PFPhotonIso       = l.pfIsolationVariables().sumPhotonEt;
-    cout<<"PFChargedHadIso "<<PFChargedHadIso<<endl;
-    cout<<"PFNeutralHadIso "<<PFNeutralHadIso<<endl;
-    cout<<"PFPhotonIso "<<PFPhotonIso<<endl;
-    cout<<"rho "<<rho<<endl;
+    // cout<<"PFChargedHadIso "<<PFChargedHadIso<<endl;
+    // cout<<"PFNeutralHadIso "<<PFNeutralHadIso<<endl;
+    // cout<<"PFPhotonIso "<<PFPhotonIso<<endl;
+    // cout<<"rho "<<rho<<endl;
+    //printf("\n LEPTON NUMBER: %d",i);
 
 
 
@@ -151,10 +160,10 @@ LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     l.setDB(d0_corr, d0_err, pat::Electron::PV3D);
     //cout<<"IP: "<<endl<<d0_corr<<endl;
     //cout<<"IP_err: "<<endl<<d0_err<<endl;
-    //cout<<"SIP: "<<endl<<d0_corr/d0_err<<endl;
+    // cout<<"SIP track: "<<endl<<d0_corr/d0_err<<endl;
   
     l.addUserFloat("SIP", abs(l.dB(pat::Electron::PV3D)/l.edB(pat::Electron::PV3D)));
-    //cout<<"SIP: "<<abs(l.dB(pat::Electron::PV3D)/l.edB(pat::Electron::PV3D))<<endl<<"IP: "<< l.dB(pat::Electron::PV3D)<<"IP_err: "<< l.edB(pat::Electron::PV3D)<<endl;
+    // cout<<"SIP PF way: "<<abs(l.dB(pat::Electron::PV3D)/l.edB(pat::Electron::PV3D))<<endl<<"IP: "<< l.dB(pat::Electron::PV3D)<<"IP_err: "<< l.edB(pat::Electron::PV3D)<<endl;
 
     float dxy = 999.;
     float dz  = 999.;
@@ -187,6 +196,7 @@ LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     float trackIso = l.dr03TkSumPt();
     //cout<<"track iso"<<endl<<trackIso;
+    int genMatch = 99;
 
     bool isBDT = true;
     bool isLOOSE = true;
@@ -202,10 +212,72 @@ LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     }
     if(clean_out) 
-    //isPFoverlap =true;
-    continue; //-- ako ostavimo njega onda samo micemo low pt duplikate 
+    isPFoverlap =true;
+    // continue; //-- ako ostavimo njega onda samo micemo low pt duplikate 
     //if(clean_out) isPFoverlap =true; //ostavljamo lowpt duplikate ali s isPFoverlap flagom
+      
+    // Explicit loop and geometric matching method (advised by Josh Bendavid)
+    // Find the closest status 1 gen electron to the reco electron
+    double dR = 999;
+    double charge_reco=l.charge();
+    double charge_gen=-99;
+    reco::GenParticle const* closestElectron = nullptr;
+    for (auto&& particle : *(genParticles.product())) {
+      // Drop everything that is not electron or not status 1
+      if (abs(particle.pdgId()) != 11 || particle.status() != 1)
+        continue;
+      //
+      double dRtmp = reco::deltaR(l.p4(), particle.p4());
   
+      if ((dRtmp < dR)) {
+        dR = dRtmp;
+        closestElectron = &particle;
+        charge_gen=particle.charge();
+      }
+    }
+    int ancestorPID = -999; 
+    int ancestorStatus = -999;
+    findFirstNonElectronMother(closestElectron, ancestorPID, ancestorStatus);
+    // See if the closest electron is close enough. If not, no match found.
+    //printf("\n before if");
+    if (closestElectron == nullptr || dR >= 0.1){ //PROVJERIT!! bilo dR_ umisto 0.1
+      //printf("\n UNMATCHED");
+      genMatch=0;
+      // continue;
+      }
+  
+    else if( ancestorPID == -999 && ancestorStatus == -999 ){
+      // No non-electron parent??? This should never happen.
+      // Complain.
+      //printf("ElectronNtupler: ERROR! Electron does not apper to have a non-electron parent\n");
+      //printf("\n UNMATCHED");//return UNMATCHED;
+      genMatch=0;
+      // continue;
+    }
+    else if( abs(ancestorPID) > 50 ){// && ancestorStatus == 2 )
+      //printf("\n TRUE_NON_PROMPT_ELECTRON");//return TRUE_NON_PROMPT_ELECTRON;
+      genMatch=3;
+      // continue;
+    }
+    else if( abs(ancestorPID) == 23 && ancestorStatus == 22 ){
+      //printf("\n TRUE_ELECTRON_FROM_Z");//return TRUE_ELECTRON_FROM_Z;
+      genMatch=1;
+      // continue;
+    }
+    // What remains is true prompt electrons
+    else {
+      //printf("\n TRUE_PROMPT_ELECTRON");
+      genMatch=2;
+      // continue;//return TRUE_PROMPT_ELECTRON;
+    }
+    // else if (closestElectron->fromHardProcessFinalState())
+    //   cout<<" TRUE_PROMPT_ELECTRON"<<endl; 
+  
+    // // if (closestElectron->isDirectHardProcessTauDecayProductFinalState())
+    // //   cout<<" TRUE_ELECTRON_FROM_TAU"; 
+    // else
+    // // What remains is true non-prompt electrons
+    //    cout<<" TRUE_NON_PROMPT_ELECTRON"<<endl; 
 
 
     //-- Missing hit
@@ -246,6 +318,9 @@ LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 //1;
 
     //--- Embed user variables
+    l.addUserFloat("genCharge",charge_gen);
+    l.addUserFloat("recoCharge",charge_reco);
+    l.addUserFloat("genMatch",genMatch);
     l.addUserFloat("trackIso",trackIso);
     l.addUserFloat("PFChargedHadIso",PFChargedHadIso);
     l.addUserFloat("PFNeutralHadIso",PFNeutralHadIso);
@@ -302,6 +377,28 @@ LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.put(std::move(result));
 }
 
+
+
+void LowptEleFiller::findFirstNonElectronMother(const reco::Candidate *particle,
+						 int &ancestorPID, int &ancestorStatus){
+
+  if( particle == 0 ){
+    printf("ElectronNtupler: ERROR! null candidate pointer, this should never happen\n");
+    return;
+  }
+
+  // Is this the first non-electron parent? If yes, return, otherwise go deeper into recursion
+  if( abs(particle->pdgId()) == 11 || (abs(particle->pdgId()) == 23 && (particle->status())!=22)){
+    //std::cout << "Electron Ancestor " << particle->mother(0)->pdgId() << " Status " << particle->mother(0)->status() <<std::endl; 
+    findFirstNonElectronMother(particle->mother(0), ancestorPID, ancestorStatus);
+  }
+  else{
+    ancestorPID = particle->pdgId();
+    ancestorStatus = particle->status();
+    //std::cout << "Particle Id " << ancestorPID << " Status " << ancestorStatus <<std::endl;
+  }
+  return;
+}
 
 #include <FWCore/Framework/interface/MakerMacros.h>
 DEFINE_FWK_MODULE(LowptEleFiller);
