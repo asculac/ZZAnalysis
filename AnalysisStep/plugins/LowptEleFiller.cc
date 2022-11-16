@@ -82,7 +82,6 @@ LowptEleFiller::~LowptEleFiller(){
 void
 LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  cout<<"test";
   // Get leptons and rho
   edm::Handle<pat::ElectronRefVector> electronHandle;
   iEvent.getByToken(electronToken, electronHandle);
@@ -108,23 +107,19 @@ LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   auto result = std::make_unique<pat::ElectronCollection>();
 
   for (unsigned int i = 0; i< electronHandle->size(); ++i){
-
     //---Clone the pat::Electron
     pat::Electron l(*((*electronHandle)[i].get()));
 
-    
 
-    //--- PF ISO
+    //--- PF ISO -- not existing for lowpt collection!
     // for cone size R=0.3 :
     float PFChargedHadIso   = l.pfIsolationVariables().sumChargedHadronPt;
     float PFNeutralHadIso   = l.pfIsolationVariables().sumNeutralHadronEt;
     float PFPhotonIso       = l.pfIsolationVariables().sumPhotonEt;
-    cout<<"PFChargedHadIso "<<PFChargedHadIso<<endl;
-    cout<<"PFNeutralHadIso "<<PFNeutralHadIso<<endl;
-    cout<<"PFPhotonIso "<<PFPhotonIso<<endl;
-    cout<<"rho "<<rho<<endl;
-
-
+    // cout<<"PFChargedHadIso "<<PFChargedHadIso<<endl;
+    // cout<<"PFNeutralHadIso "<<PFNeutralHadIso<<endl;
+    // cout<<"PFPhotonIso "<<PFPhotonIso<<endl;
+    // cout<<"rho "<<rho<<endl;
 
     float SCeta = l.superCluster()->eta();
     float fSCeta = fabs(SCeta);
@@ -165,10 +160,8 @@ LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       dz  = fabs(l.gsfTrack()->dz(vertex->position()));
     }
 
-
     float BDT = l.electronID("ID");
-    //ßcout<<"test";
-
+ 
     l.setP4(reco::Particle::PolarLorentzVector(l.pt(), l.gsfTrack()->etaMode(), l.gsfTrack()->phiMode(), l.mass()));
       //take modes
   //  if (use_regression_for_p4_) {
@@ -183,16 +176,14 @@ LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   //  }
     float pt = l.pt();
     float electronID= l.electronID("ID");
-    //cout<< "electronID" << electronID;
 
-    float trackIso = l.dr03TkSumPt();
-    //cout<<"track iso"<<endl<<trackIso;
+    float trackIso = l.dr03TkSumPt(); //we are using trackIso instead of combRelIsoPF for low pt electrons
 
-    bool isBDT = true;
-    bool isLOOSE = true;
-    bool isPFoverlap =false;
+    bool isBDT = true;  // selectedLowElectrons already pass ID 
+    bool isLOOSE = true; //flag for lowpt electrons
+    bool isPFoverlap =false; //flag for overlaps with PF electrons
     
-    //pf cleaning    
+    //PF overlap cleaning    
     bool clean_out = false;
       for(unsigned int iEle=0; iEle<pf_electronHandle->size(); ++iEle) {
         pat::Electron lpf(*((*pf_electronHandle)[iEle].get()));
@@ -202,11 +193,12 @@ LowptEleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     }
     if(clean_out) 
-    //isPFoverlap =true;
-    continue; //-- ako ostavimo njega onda samo micemo low pt duplikate 
-    //if(clean_out) isPFoverlap =true; //ostavljamo lowpt duplikate ali s isPFoverlap flagom
-  
+    continue; // we are skipping the low pt electrons which overlap with PF electrons
+    //if(clean_out) isPFoverlap =true; // we leave the low pt electron but with a flag on, this is problematic later when building a final candidate!
 
+    // ISO cut 
+    if(trackIso/pt>0.35) 
+    continue; //  iso cut applied in a poor way
 
     //-- Missing hit
 	  int missingHit;

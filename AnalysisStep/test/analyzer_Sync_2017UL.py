@@ -19,8 +19,8 @@ PD = ""
 MCFILTER = ""
 
 #For DATA:
-#IsMC = False
-#PD = "DoubleMu"
+IsMC = False
+PD = "EGamma"#"DoubleMu"
 
 # Get absolute path
 import os
@@ -43,8 +43,8 @@ if not IsMC:
 process.source.fileNames = cms.untracked.vstring(
 ### ULTRA-LEGACY PAPER - 2017 sync files
 #'/store/mc/RunIISummer20UL17MiniAOD/GluGluHToZZTo4L_M125_TuneCP5_13TeV_powheg2_JHUGenV7011_pythia8/MINIAODSIM/106X_mc2017_realistic_v6-v2/270000/794448BF-6D5B-7149-90C7-2F7D0F3E1DA6.root'
-"/store/mc/RunIISummer20UL18MiniAODv2/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/40000/DD0D06EF-5C77-8147-84F2-779DEB3E0F52.root"
-
+#"/store/mc/RunIISummer20UL18MiniAODv2/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/40000/DD0D06EF-5C77-8147-84F2-779DEB3E0F52.root"
+'/store/data/Run2018A/EGamma/MINIAOD/UL2018_MiniAODv2-v1/230000/1DC29AF8-7091-4245-A0D8-CFDF650310CC.root'
 )
 
 #process.calibratedPatElectrons.isSynchronization = cms.bool(True) #process.calibratedPatElectrons.isSynchronization = cms.bool(True) # Not needed anymore since new EGamma smearing is event deterministic

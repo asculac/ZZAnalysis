@@ -17,7 +17,7 @@ process.bareSoftLowElectrons = cms.EDFilter("PATElectronRefSelector",
     cut = cms.string("") 
 )
 
-process.selectedSlimmedElectrons1 = cms.EDFilter("PATElectronSelector",
+process.selectedSlimmedElectrons1 = cms.EDFilter("PATElectronSelector",  
     src = cms.InputTag("slimmedElectrons"),
     cut = cms.string("pt>5 && abs(eta)<2.5")
 )
@@ -29,17 +29,17 @@ process.bareSoftElectrons1 = cms.EDFilter("PATElectronRefSelector",
 
 process.softLooseElectrons = cms.EDProducer("LowptEleFiller",
    src    = cms.InputTag("bareSoftLowElectrons"),
-   src_pf    = cms.InputTag("bareSoftElectrons1"),
+   src_pf    = cms.InputTag("bareSoftElectrons"),
    src_vertex= cms.InputTag("offlineSlimmedPrimaryVertices"),
    sampleType = cms.int32(SAMPLE_TYPE),
    setup = cms.int32(LEPTON_SETUP), # define the set of effective areas, rho corrections, etc.
-   cut = cms.string(''),# removed cut because variable is in Spring15 ID  && userFloat('missingHit')<=1"),
+   cut = cms.string("pt>4 && abs(eta) < 2.5 && userFloat('dxy')<0.5 && userFloat('dz')<1"),# removed cut because variable is in Spring15 ID  && userFloat('missingHit')<=1"),
    flags = cms.PSet(
         ID = cms.string("userFloat('isBDT')"),
-        isSIP = cms.string(SIP_LOOSE),
-        isGood = cms.string("abs(1)"),#GOODLEPTON_LOOSE),#(GOODLEPTON_LOOSE),
-        isGoodRegular = cms.string("abs(1)"),#GOODELECTRON), # the "regular" (tight) selection
-        isIsoFSRUncorr  = cms.string("abs(1)"),#"userFloat('combRelIsoPF')<"+str(ELEISOCUT)),
+        isSIP = cms.string(SIP),
+        isGood = cms.string(GOODELECTRON),#GOODLEPTON_LOOSE),#(GOODLEPTON_LOOSE),
+        isGoodRegular = cms.string(GOODELECTRON),#GOODELECTRON), # the "regular" (tight) selection
+        isIsoFSRUncorr  = cms.string("abs(1)"),#"userFloat('combRelIsoPF')<"+str(ELEISOCUT)), #FIXME add iso and fsr selection for lowpt electrons!!
         isLoose = cms.string("userFloat('isLOOSE')"), #FIXME: I'd set this to  (isGood&&!isGoodTight), that would be clearer I think.
         isPFoverlap = cms.string("userFloat('isPFoverlap')"),
         trackIso = cms.string("userFloat('trackIso')"),
@@ -60,7 +60,7 @@ process.cleanSoftLooseElectrons = cms.EDProducer("PATElectronCleaner",
         muons = cms.PSet(
            src       = cms.InputTag("softMuons"), # Start from loose lepton def
            algorithm = cms.string("byDeltaR"),
-           preselection        = cms.string(''),#"userFloat('isGood')"),
+           preselection        = cms.string("userFloat('isGood')"),
            deltaR              = cms.double(0.05),
            checkRecoComponents = cms.bool(False), # don't check if they share some AOD object ref
            pairCut             = cms.string(""),
@@ -72,17 +72,14 @@ process.cleanSoftLooseElectrons = cms.EDProducer("PATElectronCleaner",
 
 
 
-process.loose_electrons = cms.Sequence(process.selectedLowElectrons + process.bareSoftLowElectrons + process.selectedSlimmedElectrons1 + process.bareSoftElectrons1 + process.softLooseElectrons + process.cleanSoftLooseElectrons )
+process.loose_electrons = cms.Sequence(process.selectedLowElectrons + process.bareSoftLowElectrons 
++ process.selectedSlimmedElectrons1 + process.bareSoftElectrons1 ##this part should be remved and just use the selectedSlimmedElectrons and bareSoftElectrons
++ process.softLooseElectrons + process.cleanSoftLooseElectrons )
 process.electrons += process.loose_electrons
 
 
-
-# SKIPPERMUTATIONS is used since the loose ele collection also include electrons passing the standard (tight) selection, 
-# when both electrons pass the standard selection we end up with 2 pairings, and can skip either one. this is not the case when d1 passes the loos selection and not the tight one.
+ 
 SKIPPERMUTATIONS = ""#"((daughter(0).pt>daughter(1).pt)||(!daughter(1).masterClone.userFloat('isGoodRegular')))"  #----- ?
-
-#FIXME: in SS "standard" pairs, the second electron (loose) does not have FSR! To handle FSR correctly one would have to build
-# SS "standard" pairs from 'appendPhotons:electrons appendPhotons:electrons', and merge with the SS/OS standard+loose pairs.
 
 
 #-------------MERGING------- meging low pt collections with electrons and muons, with cleaning duplicates
@@ -93,8 +90,9 @@ process.softlooseLeptons = cms.EDProducer("CandViewMerger",
 #-----------------------
 
 
-KEEPLOOSECOMB_CUT = 'mass > 0 && abs(daughter(0).pdgId())==abs(daughter(1).pdgId())'
+#KEEPLOOSECOMB_CUT = 'mass > 0 && abs(daughter(0).pdgId())==abs(daughter(1).pdgId())' --keep the one from ZZ4lAnalysis where we keep combinations of tight leptons (passing ID, SIP and ISO)
 #"REMOVE2LOWPT="!(daughter(0).masterClone.userFloat('isLoose') && daughter(1).masterClone.userFloat('isLoose'))"
+
 process.bareZCandlooseEle = cms.EDProducer("PATCandViewShallowCloneCombiner",
     decay = cms.string('softlooseLeptons@+ softlooseLeptons@-'),
     #cut=cms.string(""),
@@ -168,45 +166,7 @@ process.ZZCandlooseEle = cms.EDProducer("ZZCandidateFiller",
 
 # Z (OSSF,both e/mu) + LL (any F/C, with no ID/iso); this is the starting point for control regions
 
-# Need to add the CR where the (tight) Z1 is made of an RSE+electron and the LL-pair is from the regular e/mu colections
-#Z1_IS_TRUE_TIGHT_RSE = "daughter(0).masterClone.userFloat('isTrueTightRSEZ')"
-
-
-
-# process.bareZLLCandlooseEleZ1RSE = cms.EDProducer("CandViewShallowCloneCombiner",
-#     decay = cms.string('ZCandlooseEle LLCand'),
-#     cut = cms.string(''),
-#     checkCharge = cms.bool(False)
-# )
-
-# process.ZLLCandZ1RSE = cms.EDProducer("ZZCandidateFiller",
-#     src = cms.InputTag("bareZLLCandlooseEleZ1RSE"),
-#     sampleType = cms.int32(SAMPLE_TYPE),                    
-#     setup = cms.int32(LEPTON_SETUP),
-#     superMelaMass = cms.double(SUPERMELA_MASS),
-#     isMC = cms.bool(IsMC),
-#     bestCandComparator = cms.string(BESTCANDCOMPARATOR),
-#     bestCandAmong = cms.PSet(
-#       isBestCand    = cms.string("0"), #do not set SR best cand flag
-#       isBestCRZLLss = cms.string(CR_BESTZLLss),
-#       isBestCRZLLos_2P2F = cms.string("0"),
-#       isBestCRZLLos_3P1F = cms.string("0")
-
-#     ),
-#     ZRolesByMass = cms.bool(False),  # daughter('Z1') = daughter(0)
-#     doKinFit = cms.bool(KINREFIT),
-#     flags = cms.PSet(
-#       SR = cms.string(SR),
-#       CRZLLss = cms.string(CR_BASESEL),             #combine with proper isBestCRZLLss for AA ss/os CRss    
-#       CRZLLos_2P2F = cms.string("0"), 
-#       CRZLLos_3P1F = cms.string("0"),        
-#       number_trackless_electrons = cms.string("abs(1)"),
-#     ),
-#     recoProbabilities = cms.vstring(),
-#     muon_iso_cut = cms.double(MUISOCUT),
-#     electron_iso_cut = cms.double(ELEISOCUT),
-# )
-
+# Need to add the CR where the (tight) Z1  and the LL-pair is from the e/mu colections with low pt electrons
 
 
 
@@ -218,22 +178,24 @@ Z2LL_OS_looseEle = "abs(1)"
 Z2SIP_looseEle = "userFloat('d1.d0.isSIP')< 4 && userFloat('d1.d1.isSIP')"  
 CR_BESTCANDBASE_AA_looseEle = ("userFloat('d0.Z1Presel') && userFloat('d0.worstEleIso') <" + str(ELEISOCUT) +
                                "&& userFloat('d0.worstMuIso') <" + str(MUISOCUT)  )
-                     #makla ana SIP cut?         + "&&"  + Z2SIP_looseEle) # base for AA CR: # Z1 with tight leptons passing SIP and ISO, mass cuts; SIP on Z2
+                     #removing SIP cut for bkg estimetion
+                     # + "&&"  + Z2SIP_looseEle) # base for AA CR: # Z1 with tight leptons passing SIP and ISO, mass cuts; SIP on Z2
 
 if SELSETUP == "allCutsAtOncePlusSmart" :
-    CR_BESTZLLss_looseEle = CR_BESTCANDBASE_AA_looseEle + "&&" + Z2LL_SS + "&&" + CR_Z2MASS + "&&" + MLLALLCOMB + "&&" + "mass>70" + "&&" + "daughter(1).mass>12" + "&&" + SMARTMALLCOMB + "&&" + Z2LL_SS_looseEle #+ "&&" +
+    CR_BESTZLLss_looseEle = CR_BESTCANDBASE_AA_looseEle + "&&" + Z2LL_SS + "&&" + CR_Z2MASS + "&&" + MLLALLCOMB + "&&" + "mass>70" + "&&" + "daughter(1).mass>12" + "&&" + SMARTMALLCOMB + "&&" + Z2LL_SS_looseEle 
 
 
 CR_BASESEL_NOPT20_10 = (CR_Z2MASS + "&&" +              # mass cuts on LL
               MLLALLCOMB + "&&" +             # mass cut on all lepton pairs
-              PT20_10    + "&&" +             # pT> 20/10 over all 4 l
+              PT20_10    + "&&" +             # pT> 20/10 over all 4 l   ?? we keep it also for low pts!
               "daughter(1).mass>12 &&" +      # mZ2 >12
-              "mass>100" )  #m4l cut at 100Gev instead of 70?
+              "mass>70" )  
 
 # ll, any combination of flavour/charge, for control regions only
 process.bareLLCandlooseEle = cms.EDProducer("CandViewShallowCloneCombiner",
     decay = cms.string('softlooseLeptons softlooseLeptons'),
-    cut = cms.string(KEEPLOOSECOMB_CUT),#deltaR(daughter(0).eta, daughter(0).phi, daughter(1).eta, daughter(1).phi)>0.02'), # protect against ghosts && skip permuations of the same 2 electrons (See above)
+    cut = cms.string('deltaR(daughter(0).eta, daughter(0).phi, daughter(1).eta, daughter(1).phi)>0.02 && abs(daughter(0).pdgId())==abs(daughter(1).pdgId())'), # protect against ghosts && same flavour
+    #cms.string(KEEPLOOSECOMB_CUT),#deltaR(daughter(0).eta, daughter(0).phi, daughter(1).eta, daughter(1).phi)>0.02'), # protect against ghosts && skip permuations of the same 2 electrons (See above)
     checkCharge = cms.bool(False)
 )
 

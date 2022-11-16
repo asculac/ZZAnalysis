@@ -181,7 +181,7 @@ EleFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     //--- Trigger matching
     int HLTMatch = 0; //FIXME
 
-    //dodano za usporedbu iso
+    //track iso added to be consistend with low pt electrons
     float trackIso = l.dr03TkSumPt();
     //cout<<"track iso"<<endl<<trackIso;
 

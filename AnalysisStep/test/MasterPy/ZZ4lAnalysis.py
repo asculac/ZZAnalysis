@@ -625,7 +625,7 @@ process.appendPhotons = cms.EDProducer("LeptonPhotonMatcher",
     )
 
 if ADDLOOSEELE:
-    process.appendPhotons.looseElectronSrc = cms.InputTag("cleanSoftLooseElectrons")
+    process.appendPhotons.looseElectronSrc = cms.InputTag("cleanSoftLooseElectrons") #looseElectrons are modified to be the ones from the new low pt collection, this should be updated to avoid confusion 
 #    process.appendPhotons.tleSrc = cms.InputTag("softPhotons")
 #    process.appendPhotons.TLEMinPt = cms.double(25.)
 
@@ -952,7 +952,7 @@ CR_BESTCANDBASE = ("userFloat('d0.Z1Presel') && userFloat('d0.worstEleIso') <" +
 
 CR_BESTCANDBASE_AA   = ("userFloat('d0.Z1Presel') && userFloat('d0.worstEleIso') <" + str(ELEISOCUT) +
                         "&& userFloat('d0.worstMuIso') <" + str(MUISOCUT))
-                        # + "&&" + ---ANA- no sip cut for bkg estimation
+                        # + "&&" + -- removed sip cut for bkg estimation
                         #Z2SIP) # base for AA CR: # Z1 with tight leptons passing SIP and ISO, mass cuts; SIP on Z2
 
 
